@@ -4,6 +4,7 @@ import {
   BatteryMedium,
   BellRing,
   Brain,
+  Droplets,
   FileText,
   Ghost,
   LoaderCircle,
@@ -17,6 +18,7 @@ import {
   ShieldAlert,
   Sparkles,
   Timer,
+  Trash2,
   Wallet,
   X,
 } from 'lucide-react'
@@ -26,8 +28,8 @@ import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-do
 const MODULES = [
   { id: 'recovery', title: '能量回收计划', subtitle: 'Poop-Time Tracker', icon: Wallet, emoji: '☕' },
   { id: 'void', title: '虚空遁地兽', subtitle: 'Void Walker', icon: Ghost, emoji: '🧘' },
-  { id: 'jargon', title: '语义重塑模组', subtitle: 'Jargon Refactor', icon: MessagesSquare, emoji: '🗣️' },
-  { id: 'board', title: '全域感知终端', subtitle: 'Cyber-Ox Board', icon: Monitor, emoji: '📊' },
+  { id: 'jargon', title: '语义重塑模组', subtitle: 'Jargon Refactor', icon: MessagesSquare, emoji: '🪄' },
+  { id: 'board', title: '全域感知终端', subtitle: 'Cyber-Ox Board', icon: Monitor, emoji: '📡' },
   { id: 'weekly', title: '存量文档加速器', subtitle: 'Weekly Catalyst', icon: FileText, emoji: '📝' },
   { id: 'consoler', title: '精神熵增稳定器', subtitle: 'CPU Consoler', icon: Brain, emoji: '💆' },
   { id: 'levator', title: '律动核心工程', subtitle: 'Project Levator Ani', icon: BellRing, emoji: '🍑' },
@@ -47,14 +49,14 @@ const JARGON_EXAMPLES = {
 }
 
 const CONSOLER_MESSAGES = [
-  '老板离他的法拉利又近了一步，但你离下班也近了一点。',
-  '检测到灵魂负载过高，建议喝水、伸展、然后轻量摸鱼。',
-  '你没有摸鱼，你在做心理缓冲与生产力保养。',
+  '老板离法拉利更近一步，你离下班也更近一步。',
+  '检测到灵魂飘逸，建议深呼吸、喝水、轻量摸鱼。',
+  '不是偷懒，是在给大脑做热修复。',
 ]
 
+const MAGIC_PANEL =
+  'rounded-[2rem] border border-white/70 bg-white/65 backdrop-blur-2xl shadow-[0_22px_65px_rgba(107,139,125,0.22)]'
 const REFACTOR_ENDPOINT = import.meta.env.VITE_REFACTOR_ENDPOINT || '/api/refactor'
-const SOFT_PANEL =
-  'rounded-3xl border border-emerald-100/70 bg-white/75 backdrop-blur-xl shadow-[0_20px_45px_rgba(114,150,126,0.16)]'
 const MotionButton = motion.button
 const MotionDiv = motion.div
 const MotionSection = motion.section
@@ -96,13 +98,17 @@ function formatCurrency(value) {
   }).format(value)
 }
 
-function CozyButton({ className = '', children, ...props }) {
+function MagicBubble({ className = '', children, active = false, ...props }) {
   return (
     <MotionButton
       type="button"
-      whileHover={{ y: -1.5, scale: 1.01 }}
-      whileTap={{ scale: 0.98 }}
-      className={`rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-2 text-sm font-medium text-emerald-900 transition hover:bg-emerald-100 ${className}`}
+      whileHover={{ y: -3, scale: 1.06 }}
+      whileTap={{ scale: 0.95 }}
+      className={`inline-flex items-center justify-center rounded-full border px-4 py-3 text-sm text-slate-700 transition ${
+        active
+          ? 'border-violet-300 bg-violet-100/85 shadow-[0_0_25px_rgba(168,85,247,0.25)]'
+          : 'border-white/80 bg-white/70 shadow-[0_12px_30px_rgba(127,151,138,0.22)]'
+      } ${className}`}
       {...props}
     >
       {children}
@@ -110,24 +116,103 @@ function CozyButton({ className = '', children, ...props }) {
   )
 }
 
-function ModuleShell({ title, subtitle, icon: Icon, children }) {
+function MagicDust() {
+  return (
+    <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      {Array.from({ length: 18 }).map((_, index) => (
+        <MotionSpan
+          key={index}
+          className="absolute rounded-full bg-white/55"
+          style={{
+            width: `${8 + (index % 5) * 6}px`,
+            height: `${8 + (index % 5) * 6}px`,
+            left: `${5 + (index * 13) % 90}%`,
+            top: `${6 + (index * 17) % 82}%`,
+          }}
+          animate={{
+            y: [0, -20 - (index % 6) * 8, 0],
+            opacity: [0.2, 0.55, 0.2],
+            scale: [1, 1.15, 1],
+          }}
+          transition={{
+            duration: 4.2 + (index % 7) * 0.7,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: index * 0.16,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function OrbField({ activeModuleId, onSelect }) {
+  return (
+    <div className="relative mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+      {MODULES.map((moduleItem, index) => {
+        const active = activeModuleId === moduleItem.id
+        const sizeClass = index % 3 === 0 ? 'h-28 w-28' : index % 3 === 1 ? 'h-24 w-24' : 'h-20 w-20'
+        return (
+          <MotionButton
+            key={moduleItem.id}
+            type="button"
+            onClick={() => onSelect(moduleItem.id)}
+            whileHover={{ scale: 1.1, y: -5 }}
+            whileTap={{ scale: 0.95 }}
+            animate={{ y: [0, -6, 0] }}
+            transition={{
+              y: { duration: 3.2 + (index % 5) * 0.4, repeat: Infinity, ease: 'easeInOut' },
+              type: 'spring',
+              stiffness: 220,
+              damping: 18,
+            }}
+            className={`relative rounded-full border backdrop-blur-xl ${sizeClass} ${
+              active
+                ? 'border-fuchsia-300/70 bg-fuchsia-100/80 shadow-[0_0_30px_rgba(217,70,239,0.35)]'
+                : 'border-white/80 bg-white/65 shadow-[0_18px_36px_rgba(123,152,139,0.22)]'
+            }`}
+          >
+            <div className="flex h-full w-full flex-col items-center justify-center gap-1">
+              <span className="text-xl">{moduleItem.emoji}</span>
+              <span className="text-[11px] font-semibold text-slate-700">{moduleItem.title}</span>
+            </div>
+          </MotionButton>
+        )
+      })}
+    </div>
+  )
+}
+
+function ModuleShell({ title, subtitle, icon: Icon, onClose, onRecycle, children }) {
   return (
     <MotionSection
-      key={title}
-      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+      drag
+      dragMomentum={false}
+      onDragEnd={(_, info) => {
+        if (typeof window !== 'undefined') {
+          const nearTrash = info.point.x > window.innerWidth - 180 && info.point.y > window.innerHeight - 180
+          if (nearTrash) onRecycle()
+        }
+      }}
+      initial={{ opacity: 0, y: 16, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 8, scale: 0.98 }}
-      transition={{ duration: 0.18 }}
-      className={`p-5 sm:p-6 ${SOFT_PANEL}`}
+      exit={{ opacity: 0, y: 14, scale: 0.97 }}
+      transition={{ duration: 0.24 }}
+      className={`relative p-5 sm:p-6 ${MAGIC_PANEL}`}
     >
-      <header className="mb-5 flex flex-wrap items-center gap-3 border-b border-emerald-100 pb-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/80 text-emerald-700">
-          {createElement(Icon, { className: 'h-5 w-5' })}
+      <header className="mb-5 flex items-center justify-between border-b border-white/70 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-violet-600">
+            {createElement(Icon, { className: 'h-5 w-5' })}
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-slate-800 sm:text-lg">{title}</h2>
+            <p className="text-xs text-slate-500">{subtitle}</p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-base font-semibold text-slate-800 sm:text-lg">{title}</h2>
-          <p className="text-xs text-slate-500">{subtitle}</p>
-        </div>
+        <MagicBubble className="h-10 w-10 border-rose-200 bg-rose-50/70 text-rose-700" onClick={onClose}>
+          <X className="h-4 w-4" />
+        </MagicBubble>
       </header>
       {children}
     </MotionSection>
@@ -151,7 +236,7 @@ function RecoveryModule({ onElapsedChange }) {
     if (!running) return
     const tick = () => setElapsedMs(Date.now() - startRef.current)
     tick()
-    const timer = window.setInterval(tick, 140)
+    const timer = window.setInterval(tick, 120)
     return () => window.clearInterval(timer)
   }, [running])
 
@@ -163,11 +248,6 @@ function RecoveryModule({ onElapsedChange }) {
   const earned = (elapsedMs / 1000) * ratePerSecond
   const cupCoverage = earned / 16
   const tissueUsage = (elapsedMs / 1000) * 0.0004
-
-  const updateSetting = (field, value) => {
-    const parsed = Number(value)
-    setSettings((prev) => ({ ...prev, [field]: Number.isNaN(parsed) ? 0 : parsed }))
-  }
 
   const toggleRun = () => {
     if (running) {
@@ -184,54 +264,58 @@ function RecoveryModule({ onElapsedChange }) {
     startRef.current = Date.now()
   }
 
+  const updateSetting = (field, value) => {
+    const parsed = Number(value)
+    setSettings((prev) => ({ ...prev, [field]: Number.isNaN(parsed) ? 0 : parsed }))
+  }
+
   return (
     <div className="space-y-5">
-      <p className="text-sm text-slate-600">
-        薪资参数完全保留在 localStorage，本地演算，不上传。
-      </p>
+      <p className="text-sm text-slate-600">拖动参数球、点气泡开关。少点按钮，多点魔法。</p>
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          { key: 'salary', label: '月薪（CNY）', step: '1' },
+          { key: 'salary', label: '月薪', step: '1' },
           { key: 'workDays', label: '月工作日', step: '0.01' },
           { key: 'workHours', label: '日工时', step: '0.1' },
-        ].map((item) => (
-          <label key={item.key} className="text-xs text-slate-500">
-            {item.label}
+        ].map((field) => (
+          <label key={field.key} className="text-xs text-slate-500">
+            {field.label}
             <input
-              className="mt-1.5 w-full rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-emerald-300"
+              className="mt-1.5 w-full rounded-2xl border border-white/80 bg-white/80 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-fuchsia-300"
               type="number"
               min="0"
-              step={item.step}
-              value={settings[item.key]}
-              onChange={(event) => updateSetting(item.key, event.target.value)}
+              step={field.step}
+              value={settings[field.key]}
+              onChange={(event) => updateSetting(field.key, event.target.value)}
             />
           </label>
         ))}
       </div>
-      <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50 p-4">
-        <p className="text-xs tracking-[0.18em] text-slate-400">CALM RECOVERY BOARD</p>
-        <p className="mt-2 font-mono text-4xl text-slate-800">{formatDuration(elapsedMs)}</p>
-        <p className="mt-2 text-2xl font-semibold text-emerald-700">{formatCurrency(earned)}</p>
-        <p className="mt-2 text-sm text-slate-500">
-          可覆盖 {cupCoverage.toFixed(2)} 杯瑞幸，消耗抽纸约 {tissueUsage.toFixed(3)} g。
+
+      <div className="relative overflow-hidden rounded-[2rem] border border-white/75 bg-gradient-to-br from-white/85 via-fuchsia-50/60 to-cyan-50/70 p-5">
+        <MotionDiv
+          className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-violet-200/40 blur-xl"
+          animate={{ scale: [1, 1.24, 1], opacity: [0.35, 0.6, 0.35] }}
+          transition={{ duration: 3.8, repeat: Infinity }}
+        />
+        <p className="text-xs tracking-[0.2em] text-slate-400">MONEY ALCHEMY</p>
+        <p className="mt-3 font-mono text-5xl text-slate-800">{formatDuration(elapsedMs)}</p>
+        <p className="mt-2 text-3xl font-semibold text-violet-700">{formatCurrency(earned)}</p>
+        <p className="mt-3 text-sm text-slate-600">
+          覆盖 {cupCoverage.toFixed(2)} 杯咖啡 · 抽纸约 {tissueUsage.toFixed(3)}g
         </p>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <CozyButton
-          onClick={toggleRun}
-          className={running ? 'border-rose-200 bg-rose-50 text-rose-700' : ''}
-        >
-          {running ? <Pause className="mr-2 inline h-4 w-4" /> : <Play className="mr-2 inline h-4 w-4" />}
-          {running ? '暂停回收' : '开始回收'}
-        </CozyButton>
-        <CozyButton onClick={reset} className="border-amber-200 bg-amber-50 text-amber-700">
-          <RotateCcw className="mr-2 inline h-4 w-4" />
-          重置
-        </CozyButton>
-        <CozyButton onClick={() => setFocusMode((v) => !v)} className="border-sky-200 bg-sky-50 text-sky-700">
-          <Sparkles className="mr-2 inline h-4 w-4" />
-          {focusMode ? '退出沉浸' : '进入沉浸'}
-        </CozyButton>
+
+      <div className="flex flex-wrap gap-3">
+        <MagicBubble onClick={toggleRun} active={running} className="h-14 w-14">
+          {running ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+        </MagicBubble>
+        <MagicBubble onClick={() => setFocusMode((v) => !v)} className="h-14 w-14">
+          <Sparkles className="h-5 w-5" />
+        </MagicBubble>
+        <MagicBubble onClick={reset} className="h-14 w-14 border-amber-200 bg-amber-50/80 text-amber-700">
+          <RotateCcw className="h-5 w-5" />
+        </MagicBubble>
       </div>
 
       <AnimatePresence>
@@ -240,36 +324,23 @@ function RecoveryModule({ onElapsedChange }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-50/90 p-5 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.82),rgba(216,235,255,0.9))] p-5 backdrop-blur-md"
           >
             <MotionDiv
-              initial={{ y: 16, opacity: 0 }}
+              initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className={`w-full max-w-2xl p-7 ${SOFT_PANEL}`}
+              className={`w-full max-w-2xl p-7 ${MAGIC_PANEL}`}
             >
-              <p className="text-xs tracking-[0.18em] text-slate-400">RECOVERY FOCUS MODE</p>
-              <p className="mt-3 font-mono text-6xl text-slate-800">{formatDuration(elapsedMs)}</p>
-              <p className="mt-3 text-3xl font-semibold text-emerald-700">{formatCurrency(earned)}</p>
-              <p className="mt-3 text-sm text-slate-500">
-                当前收益可覆盖 {cupCoverage.toFixed(2)} 杯咖啡，抽纸消耗 {tissueUsage.toFixed(3)} g。
-              </p>
-              <div className="mt-6 flex flex-wrap gap-2">
-                <CozyButton onClick={toggleRun}>
-                  {running ? (
-                    <>
-                      <Pause className="mr-2 inline h-4 w-4" />
-                      暂停计时
-                    </>
-                  ) : (
-                    <>
-                      <Play className="mr-2 inline h-4 w-4" />
-                      继续计时
-                    </>
-                  )}
-                </CozyButton>
-                <CozyButton onClick={() => setFocusMode(false)} className="border-slate-200 bg-white text-slate-600">
-                  关闭沉浸
-                </CozyButton>
+              <p className="text-xs tracking-[0.24em] text-slate-400">FOCUS SPELL</p>
+              <p className="mt-4 font-mono text-6xl text-slate-800">{formatDuration(elapsedMs)}</p>
+              <p className="mt-3 text-3xl font-semibold text-violet-700">{formatCurrency(earned)}</p>
+              <div className="mt-6 flex gap-3">
+                <MagicBubble onClick={toggleRun} active={running} className="h-14 w-14">
+                  {running ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                </MagicBubble>
+                <MagicBubble onClick={() => setFocusMode(false)} className="h-14 w-14">
+                  <X className="h-5 w-5" />
+                </MagicBubble>
               </div>
             </MotionDiv>
           </MotionDiv>
@@ -307,12 +378,12 @@ function VoidWalkerModule({ durations, setDurations }) {
     if (!ctx) return
 
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-    gradient.addColorStop(0, '#f4fbf6')
-    gradient.addColorStop(1, '#d9f3e5')
+    gradient.addColorStop(0, '#fdf8ff')
+    gradient.addColorStop(1, '#dff2ff')
     ctx.fillStyle = gradient
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    ctx.fillStyle = '#2f5c4a'
+    ctx.fillStyle = '#4c3a74'
     ctx.font = '700 48px "Inter", sans-serif'
     ctx.fillText('今日职场隐身度：98%', 48, 120)
     ctx.font = '500 26px "Inter", sans-serif'
@@ -320,8 +391,7 @@ function VoidWalkerModule({ durations, setDurations }) {
     ctx.fillText(`Status_A 带薪排泄：${formatDuration(durations.statusA)}`, 48, 280)
     ctx.fillText(`Status_B 会议折磨：${formatDuration(durations.statusB)}`, 48, 340)
     ctx.fillText(`Status_C 构建等待：${formatDuration(durations.statusC)}`, 48, 400)
-
-    ctx.strokeStyle = '#8bcbb1'
+    ctx.strokeStyle = '#b2b5ff'
     ctx.lineWidth = 2
     ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60)
     setPosterUrl(canvas.toDataURL('image/png'))
@@ -329,72 +399,61 @@ function VoidWalkerModule({ durations, setDurations }) {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-slate-600">
-        把“摸鱼状态”做成柔和 tab 切换，一次专注一个状态，不再一屏 START。
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {VOID_STATUS.map((item) => {
-          const active = item.id === selectedStatus
-          return (
-            <CozyButton
-              key={item.id}
-              className={active ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : ''}
-              onClick={() => setSelectedStatus(item.id)}
-            >
-              {item.label}
-            </CozyButton>
-          )
-        })}
-      </div>
-      <div className="rounded-2xl border border-emerald-100 bg-white/80 p-4">
-        <p className="text-xs text-slate-500">
-          当前模式：{VOID_STATUS.find((item) => item.id === selectedStatus)?.desc}
-        </p>
-        <p className="mt-1 font-mono text-3xl text-slate-800">{formatDuration(durations[selectedStatus])}</p>
-        <div className="mt-3">
-          <CozyButton
-            onClick={() => setRunning((v) => !v)}
-            className={running ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-sky-200 bg-sky-50 text-sky-700'}
+      <p className="text-sm text-slate-600">状态做成漂浮气泡，控制只保留主开关。</p>
+      <div className="flex flex-wrap gap-3">
+        {VOID_STATUS.map((item) => (
+          <MagicBubble
+            key={item.id}
+            active={item.id === selectedStatus}
+            className="h-14 min-w-14 px-5"
+            onClick={() => setSelectedStatus(item.id)}
           >
-            {running ? <Pause className="mr-2 inline h-4 w-4" /> : <Play className="mr-2 inline h-4 w-4" />}
-            {running ? '暂停当前状态' : '开始当前状态'}
-          </CozyButton>
+            {item.label}
+          </MagicBubble>
+        ))}
+      </div>
+
+      <div className="rounded-[1.8rem] border border-white/75 bg-gradient-to-br from-white/90 to-cyan-50/65 p-4">
+        <p className="text-xs text-slate-500">当前魔法态：{VOID_STATUS.find((item) => item.id === selectedStatus)?.desc}</p>
+        <p className="mt-2 font-mono text-4xl text-slate-800">{formatDuration(durations[selectedStatus])}</p>
+        <div className="mt-4 flex gap-3">
+          <MagicBubble onClick={() => setRunning((v) => !v)} active={running} className="h-14 w-14">
+            {running ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          </MagicBubble>
+          <MagicBubble onClick={generatePoster} className="h-14 w-14">
+            <Sparkles className="h-5 w-5" />
+          </MagicBubble>
+          <MagicBubble
+            onClick={() => setDurations({ statusA: 0, statusB: 0, statusC: 0 })}
+            className="h-14 w-14 border-rose-200 bg-rose-50/70 text-rose-700"
+          >
+            <Trash2 className="h-5 w-5" />
+          </MagicBubble>
         </div>
       </div>
+
       <div className="grid gap-2">
         {VOID_STATUS.map((item) => {
           const ratio = totalMs ? (durations[item.id] / totalMs) * 100 : 0
           return (
-            <div key={item.id} className="rounded-xl border border-emerald-100 bg-white/80 p-3">
+            <div key={item.id} className="rounded-xl border border-white/80 bg-white/70 p-3">
               <div className="mb-2 flex justify-between text-sm text-slate-600">
                 <span>{item.label}</span>
                 <span className="font-mono">{formatDuration(durations[item.id])}</span>
               </div>
-              <div className="h-2 rounded-full bg-emerald-50">
+              <div className="h-2 rounded-full bg-slate-100">
                 <MotionDiv
                   animate={{ width: `${ratio}%` }}
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300"
+                  className="h-full rounded-full bg-gradient-to-r from-violet-300 to-cyan-300"
                 />
               </div>
             </div>
           )
         })}
       </div>
-      <div className="flex flex-wrap gap-2">
-        <CozyButton onClick={generatePoster}>
-          <Sparkles className="mr-2 inline h-4 w-4" />
-          生成报告
-        </CozyButton>
-        <CozyButton
-          onClick={() => setDurations({ statusA: 0, statusB: 0, statusC: 0 })}
-          className="border-amber-200 bg-amber-50 text-amber-700"
-        >
-          <RotateCcw className="mr-2 inline h-4 w-4" />
-          清零计时
-        </CozyButton>
-      </div>
+
       {posterUrl ? (
-        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-3">
+        <div className="rounded-2xl border border-white/80 bg-white/75 p-3">
           <img alt="今日职场隐身度海报" src={posterUrl} className="w-full rounded-xl" />
         </div>
       ) : null}
@@ -447,43 +506,29 @@ function JargonRefactorModule() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-slate-600">
-        已接入可配置接口：<code className="rounded bg-emerald-50 px-1.5 py-0.5">{REFACTOR_ENDPOINT}</code>
-      </p>
-      <div className="flex flex-wrap gap-2">
+      <p className="text-sm text-slate-600">黑话炼金接口：{REFACTOR_ENDPOINT}</p>
+      <div className="flex flex-wrap gap-3">
         {['向上管理', '平级对齐', '向下兼容'].map((targetMode) => (
-          <CozyButton
+          <MagicBubble
             key={targetMode}
+            active={mode === targetMode}
+            className="h-14 min-w-14 px-4"
             onClick={() => setMode(targetMode)}
-            className={mode === targetMode ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : ''}
           >
             {targetMode}
-          </CozyButton>
+          </MagicBubble>
         ))}
       </div>
-      <label className="block text-xs text-slate-500">
-        原始发言
-        <textarea
-          className="mt-1.5 h-28 w-full resize-none rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-emerald-300"
-          value={inputValue}
-          onChange={(event) => setInputValue(event.target.value)}
-          placeholder="输入你最真实的一句话..."
-        />
-      </label>
-      <CozyButton onClick={refactor} className="border-sky-200 bg-sky-50 text-sky-700">
-        {loading ? (
-          <>
-            <LoaderCircle className="mr-2 inline h-4 w-4 animate-spin" />
-            重塑中...
-          </>
-        ) : (
-          <>
-            <Send className="mr-2 inline h-4 w-4" />
-            执行语义重塑
-          </>
-        )}
-      </CozyButton>
-      <div className="rounded-2xl border border-emerald-100 bg-white/90 p-4">
+      <textarea
+        className="h-28 w-full resize-none rounded-3xl border border-white/80 bg-white/80 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-violet-300"
+        value={inputValue}
+        onChange={(event) => setInputValue(event.target.value)}
+        placeholder="输入你真实想说的话..."
+      />
+      <MagicBubble onClick={refactor} className="h-14 w-14">
+        {loading ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+      </MagicBubble>
+      <div className="rounded-3xl border border-white/80 bg-white/75 p-4">
         <p className="text-xs text-slate-500">重塑输出</p>
         <p className="mt-2 leading-7 text-slate-700">
           {outputValue || '在当前资源排期下，该方案的投入产出比（ROI）尚未达到临界点。'}
@@ -526,37 +571,33 @@ function CyberOxBoardModule() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-slate-600">柔和版体征看板：波动有，但看起来不焦虑。</p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-4">
+        <div className="rounded-3xl border border-white/80 bg-white/70 p-4">
           <p className="text-xs text-slate-500">Bug 存量</p>
           <p className="mt-2 text-3xl font-semibold text-slate-800">{bugCount}</p>
         </div>
-        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-4">
-          <p className="text-xs text-slate-500">咖啡因水平</p>
-          <div className="mt-3 h-3 rounded-full bg-emerald-50">
-            <MotionDiv
-              animate={{ width: `${caffeine}%` }}
-              className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300"
-            />
+        <div className="rounded-3xl border border-white/80 bg-white/70 p-4">
+          <p className="text-xs text-slate-500">咖啡因</p>
+          <div className="mt-2 h-2.5 rounded-full bg-slate-100">
+            <MotionDiv animate={{ width: `${caffeine}%` }} className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-violet-300" />
           </div>
           <p className="mt-2 flex items-center gap-2 text-sm text-slate-700">
             <BatteryMedium className="h-4 w-4" />
             {caffeine}%
           </p>
         </div>
-        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-4">
+        <div className="rounded-3xl border border-white/80 bg-white/70 p-4">
           <p className="text-xs text-slate-500">离职倒计时</p>
           <p className="mt-2 font-mono text-xl text-slate-800">{`${days}天 ${hours}:${minutes}:${seconds}`}</p>
         </div>
-        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-4">
-          <p className="mb-2 text-xs text-slate-500">老板距离（雷达）</p>
-          <div className="relative mx-auto h-24 w-24">
-            <Radar className="absolute inset-0 m-auto h-8 w-8 text-emerald-500" />
+        <div className="rounded-3xl border border-white/80 bg-white/70 p-4">
+          <p className="text-xs text-slate-500">老板雷达</p>
+          <div className="relative mx-auto mt-2 h-24 w-24">
+            <Radar className="absolute inset-0 m-auto h-7 w-7 text-violet-500" />
             {[0, 1, 2].map((ring) => (
               <MotionSpan
                 key={ring}
-                className="absolute inset-0 rounded-full border border-emerald-200"
+                className="absolute inset-0 rounded-full border border-violet-200"
                 animate={{ scale: [0.35, 1.08], opacity: [0.45, 0] }}
                 transition={{ duration: 2.2, repeat: Infinity, delay: ring * 0.55 }}
               />
@@ -585,32 +626,29 @@ function WeeklyCatalystModule({ fishMs }) {
   const generateReport = () => {
     const fishHours = (fishMs / (1000 * 60 * 60)).toFixed(2)
     const selectedText = selectedKeywords.length ? selectedKeywords.join(' / ') : '结构化推进'
-    const generated = `本周累计“战略思考时长”约 ${fishHours} 小时。围绕 ${selectedText} 等关键抓手，已完成跨模块语义对齐与风险预判。由于本周深挖底层架构逻辑，导致表面产出呈现滞后性，实则在为下周爆发式增长做势能储备。`
-    setReport(generated)
+    setReport(
+      `本周累计“战略思考时长”约 ${fishHours} 小时。围绕 ${selectedText} 等关键抓手，已完成跨模块语义对齐与风险预判。由于本周深挖底层架构逻辑，导致表面产出呈现滞后性，实则在为下周爆发式增长做势能储备。`,
+    )
   }
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-slate-600">轻松点关键词，再点一下就能出一段“看起来很努力”的文案。</p>
-      <div className="flex flex-wrap gap-2">
-        {keywords.map((keyword) => {
-          const checked = selectedKeywords.includes(keyword)
-          return (
-            <CozyButton
-              key={keyword}
-              className={checked ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : ''}
-              onClick={() => toggleKeyword(keyword)}
-            >
-              {checked ? '☑' : '☐'} {keyword}
-            </CozyButton>
-          )
-        })}
+      <div className="flex flex-wrap gap-3">
+        {keywords.map((keyword) => (
+          <MagicBubble
+            key={keyword}
+            active={selectedKeywords.includes(keyword)}
+            className="h-14 min-w-14 px-4"
+            onClick={() => toggleKeyword(keyword)}
+          >
+            {keyword}
+          </MagicBubble>
+        ))}
       </div>
-      <CozyButton onClick={generateReport}>
-        <Sparkles className="mr-2 inline h-4 w-4" />
-        一键生成周报语料
-      </CozyButton>
-      <div className="rounded-2xl border border-emerald-100 bg-white/90 p-4">
+      <MagicBubble onClick={generateReport} className="h-14 w-14">
+        <Sparkles className="h-5 w-5" />
+      </MagicBubble>
+      <div className="rounded-3xl border border-white/80 bg-white/75 p-4">
         <p className="text-xs text-slate-500">自动文案输出</p>
         <p className="mt-2 leading-7 text-slate-700">
           {report ||
@@ -709,24 +747,19 @@ function CPUConsolerModule() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-slate-600">反向 PUA 补给站，每 15 分钟会弹一次温柔提醒。</p>
-      <div className="flex flex-wrap gap-2">
-        <CozyButton onClick={triggerConsoler}>
-          <Brain className="mr-2 inline h-4 w-4" />
-          立即补给
-        </CozyButton>
-        <CozyButton onClick={playChant} className="border-cyan-200 bg-cyan-50 text-cyan-700">
-          <Play className="mr-2 inline h-4 w-4" />
-          8-bit 大悲咒
-        </CozyButton>
-        <CozyButton onClick={playWhiteNoise} className="border-sky-200 bg-sky-50 text-sky-700">
-          <Play className="mr-2 inline h-4 w-4" />
-          赛博白噪音
-        </CozyButton>
-        <CozyButton onClick={stopAudio} className="border-rose-200 bg-rose-50 text-rose-700">
-          <Pause className="mr-2 inline h-4 w-4" />
-          停止音频
-        </CozyButton>
+      <div className="flex flex-wrap gap-3">
+        <MagicBubble onClick={triggerConsoler} className="h-14 w-14">
+          <Brain className="h-5 w-5" />
+        </MagicBubble>
+        <MagicBubble onClick={playChant} className="h-14 w-14">
+          <Play className="h-5 w-5" />
+        </MagicBubble>
+        <MagicBubble onClick={playWhiteNoise} className="h-14 w-14">
+          <Droplets className="h-5 w-5" />
+        </MagicBubble>
+        <MagicBubble onClick={stopAudio} className="h-14 w-14 border-rose-200 bg-rose-50/80 text-rose-700">
+          <Pause className="h-5 w-5" />
+        </MagicBubble>
       </div>
       <p className="text-xs text-slate-500">
         当前音频：{audioMode === 'idle' ? '静默' : audioMode === 'chant' ? '8-bit 咒文中' : '白噪音循环中'}
@@ -737,7 +770,7 @@ function CPUConsolerModule() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
-            className="rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-700"
+            className="rounded-3xl border border-white/80 bg-white/75 px-4 py-3 text-sm text-slate-700"
           >
             {toastMessage}
           </MotionDiv>
@@ -793,41 +826,29 @@ function LevatorAniModule() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-slate-600">通知 + 标题闪烁双保险，提醒你别坐太久。</p>
-      <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-        <label className="text-xs text-slate-500">
-          提醒间隔（分钟）
-          <input
-            className="mt-1.5 w-full rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-emerald-300"
-            type="number"
-            min="1"
-            value={intervalMinutes}
-            onChange={(event) => setIntervalMinutes(Number(event.target.value) || 1)}
-          />
-        </label>
-        <div className="rounded-xl border border-emerald-100 bg-white px-3 py-2 text-xs text-slate-600">
-          通知权限：{permission}
-        </div>
+      <label className="block text-xs text-slate-500">
+        提醒间隔（分钟）
+        <input
+          className="mt-1.5 w-full rounded-3xl border border-white/80 bg-white/80 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-violet-300"
+          type="number"
+          min="1"
+          value={intervalMinutes}
+          onChange={(event) => setIntervalMinutes(Number(event.target.value) || 1)}
+        />
+      </label>
+      <div className="flex flex-wrap gap-3">
+        <MagicBubble onClick={requestPermission} className="h-14 w-14">
+          <BellRing className="h-5 w-5" />
+        </MagicBubble>
+        <MagicBubble onClick={() => setActive((v) => !v)} active={active} className="h-14 w-14">
+          <AlarmClock className="h-5 w-5" />
+        </MagicBubble>
+        <MagicBubble onClick={fireReminder} className="h-14 w-14 border-amber-200 bg-amber-50/80 text-amber-700">
+          <ShieldAlert className="h-5 w-5" />
+        </MagicBubble>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <CozyButton onClick={requestPermission}>
-          <BellRing className="mr-2 inline h-4 w-4" />
-          申请通知权限
-        </CozyButton>
-        <CozyButton
-          onClick={() => setActive((v) => !v)}
-          className={active ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-sky-200 bg-sky-50 text-sky-700'}
-        >
-          <AlarmClock className="mr-2 inline h-4 w-4" />
-          {active ? '停止自动提醒' : '启动自动提醒'}
-        </CozyButton>
-        <CozyButton onClick={fireReminder} className="border-amber-200 bg-amber-50 text-amber-700">
-          <ShieldAlert className="mr-2 inline h-4 w-4" />
-          立即提醒一次
-        </CozyButton>
-      </div>
-      <div className="rounded-2xl border border-emerald-100 bg-white/90 p-4 text-sm text-slate-700">
-        最近触发时间：{lastTrigger}
+      <div className="rounded-3xl border border-white/80 bg-white/75 p-4 text-sm text-slate-700">
+        权限：{permission} · 最近触发：{lastTrigger}
       </div>
     </div>
   )
@@ -884,108 +905,80 @@ function DesktopWorkspace() {
 
   if (!validModule) return <Navigate to="/" replace />
 
+  const activeModuleInfo = MODULES.find((item) => item.id === activeModuleId)
+
   return (
-    <main className="min-h-screen p-4 text-slate-700 sm:p-6">
-      <section className={`p-5 sm:p-6 ${SOFT_PANEL}`}>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold text-slate-800 sm:text-2xl">
-              🦾 Cyber-Ox Lab · 轻松版工作台
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              放松一点，再卷一点。页面做柔和，心态别太硬。
-            </p>
-          </div>
-          <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-sm text-slate-600">
-            <div className="flex items-center gap-2">
-              <Timer className="h-4 w-4 text-emerald-600" />
-              总摸鱼时长：<span className="font-mono text-slate-800">{formatDuration(fishMs)}</span>
-            </div>
-          </div>
+    <main className="relative min-h-screen overflow-hidden p-4 text-slate-700 sm:p-6">
+      <MagicDust />
+      <section className={`relative p-6 sm:p-8 ${MAGIC_PANEL}`}>
+        <div className="text-center">
+          <h1 className="bg-gradient-to-r from-violet-700 via-fuchsia-600 to-cyan-600 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
+            Cyber-Ox Magic Playground
+          </h1>
+          <p className="mt-2 text-sm text-slate-500">少按钮 · 多魔法 · 可拖拽回收</p>
+          <p className="mt-1 text-xs text-slate-400">
+            总隐身时长：<span className="font-mono text-slate-700">{formatDuration(fishMs)}</span>
+          </p>
         </div>
+        <OrbField activeModuleId={activeModuleId} onSelect={openModule} />
       </section>
 
-      <section className={`mt-4 p-3 sm:p-4 ${SOFT_PANEL}`}>
-        <div className="flex gap-3 overflow-x-auto pb-1">
-          {MODULES.map((item) => {
-            const selected = activeModuleId === item.id
+      <section className={`relative mt-5 p-4 sm:p-5 ${MAGIC_PANEL}`}>
+        <div className="mb-4 flex flex-wrap gap-2">
+          {mergedOpenModules.map((id) => {
+            const moduleItem = MODULES.find((item) => item.id === id)
+            if (!moduleItem) return null
             return (
-              <MotionButton
-                key={item.id}
-                type="button"
-                whileHover={{ y: -1.5 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => openModule(item.id)}
-                className={`min-w-[170px] rounded-2xl border p-3 text-left transition ${
-                  selected
-                    ? 'border-emerald-300 bg-emerald-100/85'
-                    : 'border-emerald-100 bg-white/85 hover:bg-emerald-50'
-                }`}
+              <MagicBubble
+                key={id}
+                active={activeModuleId === id}
+                className="h-12 min-w-12 px-4"
+                onClick={() => navigate(`/module/${id}`)}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-lg">{item.emoji}</span>
-                  {createElement(item.icon, {
-                    className: selected ? 'h-4 w-4 text-emerald-700' : 'h-4 w-4 text-slate-500',
-                  })}
-                </div>
-                <p className="mt-2 text-sm font-semibold text-slate-800">{item.title}</p>
-                <p className="text-xs text-slate-500">{item.subtitle}</p>
-              </MotionButton>
+                {moduleItem.emoji}
+              </MagicBubble>
             )
           })}
         </div>
+        <AnimatePresence mode="wait">
+          {activeModuleId && activeModuleInfo ? (
+            <ModuleShell
+              key={activeModuleId}
+              title={activeModuleInfo.title}
+              subtitle={activeModuleInfo.subtitle}
+              icon={activeModuleInfo.icon}
+              onClose={() => closeModule(activeModuleId)}
+              onRecycle={() => closeModule(activeModuleId)}
+            >
+              {renderModule(activeModuleId)}
+            </ModuleShell>
+          ) : (
+            <MotionDiv key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center text-sm text-slate-500">
+              点上面的气泡开始施法，模块可拖到右下角回收站关闭。
+            </MotionDiv>
+          )}
+        </AnimatePresence>
       </section>
 
-      {mergedOpenModules.length ? (
-        <section className={`mt-4 p-3 sm:p-4 ${SOFT_PANEL}`}>
-          <div className="mb-3 flex flex-wrap gap-2">
-            {mergedOpenModules.map((id) => {
-              const item = MODULES.find((moduleItem) => moduleItem.id === id)
-              if (!item) return null
-              const active = activeModuleId === id
-              return (
-                <MotionDiv key={id} layout className="flex items-center gap-1">
-                  <CozyButton
-                    className={active ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'bg-white'}
-                    onClick={() => navigate(`/module/${id}`)}
-                  >
-                    {item.emoji} {item.title}
-                  </CozyButton>
-                  <MotionButton
-                    type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => closeModule(id)}
-                    className="rounded-full border border-slate-200 bg-white p-1 text-slate-400 transition hover:bg-slate-50"
-                    aria-label={`关闭 ${item.title}`}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </MotionButton>
-                </MotionDiv>
-              )
-            })}
-          </div>
-          <AnimatePresence mode="wait">
-            {activeModuleId ? (
-              <ModuleShell
-                key={activeModuleId}
-                title={MODULES.find((item) => item.id === activeModuleId)?.title || ''}
-                subtitle={MODULES.find((item) => item.id === activeModuleId)?.subtitle || ''}
-                icon={MODULES.find((item) => item.id === activeModuleId)?.icon || Sparkles}
-              >
-                {renderModule(activeModuleId)}
-              </ModuleShell>
-            ) : null}
-          </AnimatePresence>
-        </section>
-      ) : (
-        <section className={`mt-4 p-8 text-center ${SOFT_PANEL}`}>
-          <p className="text-sm text-slate-500">从上方任选一个模块开始，今天先轻松再输出。</p>
-        </section>
-      )}
+      <AnimatePresence>
+        {activeModuleId ? (
+          <MotionDiv initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }} className="fixed bottom-6 right-6 z-30">
+            <MagicBubble
+              onClick={() => closeModule(activeModuleId)}
+              className="h-20 w-20 border-rose-200 bg-rose-50/75 text-rose-700 shadow-[0_0_35px_rgba(244,114,182,0.3)]"
+            >
+              <div className="flex flex-col items-center gap-1">
+                <Trash2 className="h-6 w-6" />
+                <span className="text-[11px]">回收</span>
+              </div>
+            </MagicBubble>
+          </MotionDiv>
+        ) : null}
+      </AnimatePresence>
 
-      <footer className="mt-4 pb-2 text-center text-xs text-slate-500">
-        敏感输入只写 localStorage；黑话生成通过 Cloudflare Worker 代理 DeepSeek。
+      <footer className="mt-5 text-center text-xs text-slate-500">
+        <Timer className="mr-1 inline h-3.5 w-3.5" />
+        输入数据仅存 localStorage；黑话请求走 Cloudflare 接口。
       </footer>
     </main>
   )
