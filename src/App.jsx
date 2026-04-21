@@ -1,4 +1,4 @@
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   AlarmClock,
   BatteryMedium,
@@ -55,6 +55,10 @@ const CONSOLER_MESSAGES = [
 const REFACTOR_ENDPOINT = import.meta.env.VITE_REFACTOR_ENDPOINT || '/api/refactor'
 const SOFT_PANEL =
   'rounded-3xl border border-emerald-100/70 bg-white/75 backdrop-blur-xl shadow-[0_20px_45px_rgba(114,150,126,0.16)]'
+const MotionButton = motion.button
+const MotionDiv = motion.div
+const MotionSection = motion.section
+const MotionSpan = motion.span
 
 function useLocalStorageState(key, initialValue) {
   const [value, setValue] = useState(() => {
@@ -94,7 +98,7 @@ function formatCurrency(value) {
 
 function CozyButton({ className = '', children, ...props }) {
   return (
-    <motion.button
+    <MotionButton
       type="button"
       whileHover={{ y: -1.5, scale: 1.01 }}
       whileTap={{ scale: 0.98 }}
@@ -102,13 +106,13 @@ function CozyButton({ className = '', children, ...props }) {
       {...props}
     >
       {children}
-    </motion.button>
+    </MotionButton>
   )
 }
 
 function ModuleShell({ title, subtitle, icon: Icon, children }) {
   return (
-    <motion.section
+    <MotionSection
       key={title}
       initial={{ opacity: 0, y: 12, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -126,7 +130,7 @@ function ModuleShell({ title, subtitle, icon: Icon, children }) {
         </div>
       </header>
       {children}
-    </motion.section>
+    </MotionSection>
   )
 }
 
@@ -232,13 +236,13 @@ function RecoveryModule({ onElapsedChange }) {
 
       <AnimatePresence>
         {focusMode ? (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-50/90 p-5 backdrop-blur-md"
           >
-            <motion.div
+            <MotionDiv
               initial={{ y: 16, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className={`w-full max-w-2xl p-7 ${SOFT_PANEL}`}
@@ -267,8 +271,8 @@ function RecoveryModule({ onElapsedChange }) {
                   关闭沉浸
                 </CozyButton>
               </div>
-            </motion.div>
-          </motion.div>
+            </MotionDiv>
+          </MotionDiv>
         ) : null}
       </AnimatePresence>
     </div>
@@ -367,7 +371,7 @@ function VoidWalkerModule({ durations, setDurations }) {
                 <span className="font-mono">{formatDuration(durations[item.id])}</span>
               </div>
               <div className="h-2 rounded-full bg-emerald-50">
-                <motion.div
+                <MotionDiv
                   animate={{ width: `${ratio}%` }}
                   className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300"
                 />
@@ -531,7 +535,7 @@ function CyberOxBoardModule() {
         <div className="rounded-2xl border border-emerald-100 bg-white/85 p-4">
           <p className="text-xs text-slate-500">咖啡因水平</p>
           <div className="mt-3 h-3 rounded-full bg-emerald-50">
-            <motion.div
+            <MotionDiv
               animate={{ width: `${caffeine}%` }}
               className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300"
             />
@@ -550,7 +554,7 @@ function CyberOxBoardModule() {
           <div className="relative mx-auto h-24 w-24">
             <Radar className="absolute inset-0 m-auto h-8 w-8 text-emerald-500" />
             {[0, 1, 2].map((ring) => (
-              <motion.span
+              <MotionSpan
                 key={ring}
                 className="absolute inset-0 rounded-full border border-emerald-200"
                 animate={{ scale: [0.35, 1.08], opacity: [0.45, 0] }}
@@ -729,14 +733,14 @@ function CPUConsolerModule() {
       </p>
       <AnimatePresence>
         {toastMessage ? (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
             className="rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-700"
           >
             {toastMessage}
-          </motion.div>
+          </MotionDiv>
         ) : null}
       </AnimatePresence>
     </div>
@@ -906,7 +910,7 @@ function DesktopWorkspace() {
           {MODULES.map((item) => {
             const selected = activeModuleId === item.id
             return (
-              <motion.button
+              <MotionButton
                 key={item.id}
                 type="button"
                 whileHover={{ y: -1.5 }}
@@ -926,7 +930,7 @@ function DesktopWorkspace() {
                 </div>
                 <p className="mt-2 text-sm font-semibold text-slate-800">{item.title}</p>
                 <p className="text-xs text-slate-500">{item.subtitle}</p>
-              </motion.button>
+              </MotionButton>
             )
           })}
         </div>
@@ -940,14 +944,14 @@ function DesktopWorkspace() {
               if (!item) return null
               const active = activeModuleId === id
               return (
-                <motion.div key={id} layout className="flex items-center gap-1">
+                <MotionDiv key={id} layout className="flex items-center gap-1">
                   <CozyButton
                     className={active ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'bg-white'}
                     onClick={() => navigate(`/module/${id}`)}
                   >
                     {item.emoji} {item.title}
                   </CozyButton>
-                  <motion.button
+                  <MotionButton
                     type="button"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -956,8 +960,8 @@ function DesktopWorkspace() {
                     aria-label={`关闭 ${item.title}`}
                   >
                     <X className="h-3.5 w-3.5" />
-                  </motion.button>
-                </motion.div>
+                  </MotionButton>
+                </MotionDiv>
               )
             })}
           </div>
