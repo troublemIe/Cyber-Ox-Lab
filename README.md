@@ -1,16 +1,77 @@
-# React + Vite
+# Cyber-Ox Lab（轻松版）
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+赛博牛马实验室单页应用，采用“放松、柔和、低压”的视觉基调，包含 7 个功能模块：
 
-Currently, two official plugins are available:
+- 能量回收计划
+- 虚空遁地兽
+- 语义重塑模组
+- 全域感知终端
+- 存量文档加速器
+- 精神熵增稳定器
+- 律动核心工程
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 技术栈
 
-## React Compiler
+- React + Vite
+- Tailwind CSS
+- Framer Motion
+- Lucide React
+- React Router
+- Cloudflare Workers（用于代理 DeepSeek）
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 本地开发
 
-## Expanding the ESLint configuration
+```bash
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## DeepSeek 接入方式（通过 Cloudflare，前端不暴露密钥）
+
+项目已包含 Worker 代码：`cloudflare/worker.js`，对外提供：
+
+- `POST /api/refactor`
+
+该接口会调用 DeepSeek Chat Completions，并返回：
+
+```json
+{ "result": "..." }
+```
+
+### 1) 登录 Cloudflare 并部署 Worker
+
+在仓库根目录执行：
+
+```bash
+npx wrangler login
+npx wrangler deploy --config cloudflare/wrangler.toml
+```
+
+### 2) 将密钥写入 Cloudflare Secret（不要提交到 Git）
+
+```bash
+npx wrangler secret put DEEPSEEK_API_KEY --config cloudflare/wrangler.toml
+```
+
+然后粘贴你的 API Key（终端不会回显）。
+
+可选：如果你要覆盖默认地址，再设置：
+
+```bash
+npx wrangler secret put DEEPSEEK_BASE_URL --config cloudflare/wrangler.toml
+```
+
+### 3) 前端指向 Worker
+
+创建 `.env.local`：
+
+```bash
+VITE_REFACTOR_ENDPOINT=https://<your-worker-domain>/api/refactor
+```
+
+开发/构建时会自动读取该地址；若未配置，则默认请求 `/api/refactor`。
+
+## 安全说明
+
+- 薪资等敏感输入仅在浏览器本地（localStorage）保存。
+- DeepSeek Key 不在前端，不进仓库，通过 Cloudflare Secret 托管。

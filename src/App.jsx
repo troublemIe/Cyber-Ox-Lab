@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import {
   AlarmClock,
   BatteryMedium,
@@ -24,54 +24,19 @@ import { createElement, useCallback, useEffect, useMemo, useRef, useState } from
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 
 const MODULES = [
-  {
-    id: 'recovery',
-    title: '能量回收计划',
-    subtitle: 'The Poop-Time Tracker',
-    icon: Wallet,
-  },
-  {
-    id: 'void',
-    title: '虚空遁地兽',
-    subtitle: 'The Void Walker',
-    icon: Ghost,
-  },
-  {
-    id: 'jargon',
-    title: '语义重塑模组',
-    subtitle: 'Jargon Refactor',
-    icon: MessagesSquare,
-  },
-  {
-    id: 'board',
-    title: '全域感知终端',
-    subtitle: 'Cyber-Ox Board',
-    icon: Monitor,
-  },
-  {
-    id: 'weekly',
-    title: '存量文档加速器',
-    subtitle: 'The Weekly Catalyst',
-    icon: FileText,
-  },
-  {
-    id: 'consoler',
-    title: '精神熵增稳定器',
-    subtitle: 'CPU Consoler',
-    icon: Brain,
-  },
-  {
-    id: 'levator',
-    title: '律动核心工程',
-    subtitle: 'Project Levator Ani',
-    icon: BellRing,
-  },
+  { id: 'recovery', title: '能量回收计划', subtitle: 'Poop-Time Tracker', icon: Wallet, emoji: '☕' },
+  { id: 'void', title: '虚空遁地兽', subtitle: 'Void Walker', icon: Ghost, emoji: '🧘' },
+  { id: 'jargon', title: '语义重塑模组', subtitle: 'Jargon Refactor', icon: MessagesSquare, emoji: '🗣️' },
+  { id: 'board', title: '全域感知终端', subtitle: 'Cyber-Ox Board', icon: Monitor, emoji: '📊' },
+  { id: 'weekly', title: '存量文档加速器', subtitle: 'Weekly Catalyst', icon: FileText, emoji: '📝' },
+  { id: 'consoler', title: '精神熵增稳定器', subtitle: 'CPU Consoler', icon: Brain, emoji: '💆' },
+  { id: 'levator', title: '律动核心工程', subtitle: 'Project Levator Ani', icon: BellRing, emoji: '🍑' },
 ]
 
 const VOID_STATUS = [
-  { id: 'statusA', label: 'Status_A: 带薪排泄中' },
-  { id: 'statusB', label: 'Status_B: 无效会议折磨中' },
-  { id: 'statusC', label: 'Status_C: 代码编译/环境构建中' },
+  { id: 'statusA', label: '带薪排泄中', desc: 'Status_A' },
+  { id: 'statusB', label: '无效会议中', desc: 'Status_B' },
+  { id: 'statusC', label: '编译等待中', desc: 'Status_C' },
 ]
 
 const JARGON_EXAMPLES = {
@@ -81,30 +46,21 @@ const JARGON_EXAMPLES = {
     '希望能基于您对业务的深刻洞察，为技术落地提供更具前瞻性的指导建议。',
 }
 
-const GLOBAL_GLASS =
-  'bg-white/5 border border-emerald-300/20 backdrop-blur-xl drop-shadow-[0_0_15px_rgba(0,255,159,0.3)]'
-
-const MotionButton = motion.button
-const MotionDiv = motion.div
-const MotionP = motion.p
-const MotionSection = motion.section
-const MotionSpan = motion.span
-
 const CONSOLER_MESSAGES = [
-  '老板离他的法拉利又近了一步，加油，奋斗者！',
-  '检测到您的灵魂正在脱离肉体，请及时通过摸鱼找回自我。',
-  '本日精神阈值低于 22%，建议启动快乐摸鱼协议。',
+  '老板离他的法拉利又近了一步，但你离下班也近了一点。',
+  '检测到灵魂负载过高，建议喝水、伸展、然后轻量摸鱼。',
+  '你没有摸鱼，你在做心理缓冲与生产力保养。',
 ]
+
+const REFACTOR_ENDPOINT = import.meta.env.VITE_REFACTOR_ENDPOINT || '/api/refactor'
+const SOFT_PANEL =
+  'rounded-3xl border border-emerald-100/70 bg-white/75 backdrop-blur-xl shadow-[0_20px_45px_rgba(114,150,126,0.16)]'
 
 function useLocalStorageState(key, initialValue) {
   const [value, setValue] = useState(() => {
-    if (typeof window === 'undefined') {
-      return initialValue
-    }
+    if (typeof window === 'undefined') return initialValue
     const cached = window.localStorage.getItem(key)
-    if (!cached) {
-      return initialValue
-    }
+    if (!cached) return initialValue
     try {
       return JSON.parse(cached)
     } catch {
@@ -113,9 +69,7 @@ function useLocalStorageState(key, initialValue) {
   })
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return
-    }
+    if (typeof window === 'undefined') return
     window.localStorage.setItem(key, JSON.stringify(value))
   }, [key, value])
 
@@ -138,54 +92,41 @@ function formatCurrency(value) {
   }).format(value)
 }
 
-function CyberButton({ className = '', children, ...props }) {
+function CozyButton({ className = '', children, ...props }) {
   return (
-    <MotionButton
+    <motion.button
       type="button"
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.97 }}
-      className={`rounded-lg border border-emerald-300/35 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-100 transition hover:bg-emerald-400/20 ${className}`}
+      whileHover={{ y: -1.5, scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      className={`rounded-2xl border border-emerald-200/80 bg-emerald-50/80 px-4 py-2 text-sm font-medium text-emerald-900 transition hover:bg-emerald-100 ${className}`}
       {...props}
     >
       {children}
-    </MotionButton>
+    </motion.button>
   )
 }
 
-function ModuleWindow({ title, subtitle, icon: Icon, onClose, onFocus, children, index }) {
+function ModuleShell({ title, subtitle, icon: Icon, children }) {
   return (
-    <MotionSection
-      layout
-      initial={{ opacity: 0, y: 24, scale: 0.96 }}
+    <motion.section
+      key={title}
+      initial={{ opacity: 0, y: 12, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 16, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-      className={`absolute w-full max-w-xl ${GLOBAL_GLASS}`}
-      style={{
-        left: `${24 + index * 24}px`,
-        top: `${72 + index * 22}px`,
-        zIndex: 20 + index,
-      }}
-      onMouseDown={onFocus}
+      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+      transition={{ duration: 0.18 }}
+      className={`p-5 sm:p-6 ${SOFT_PANEL}`}
     >
-      <header className="flex items-center justify-between border-b border-emerald-300/20 px-4 py-3">
-        <div className="flex items-center gap-3">
-          {createElement(Icon, { className: 'h-4 w-4 text-emerald-200' })}
-          <div>
-            <h2 className="text-sm font-semibold text-emerald-100">{title}</h2>
-            <p className="text-xs text-emerald-300/80">{subtitle}</p>
-          </div>
+      <header className="mb-5 flex flex-wrap items-center gap-3 border-b border-emerald-100 pb-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/80 text-emerald-700">
+          {createElement(Icon, { className: 'h-5 w-5' })}
         </div>
-        <CyberButton
-          className="rounded-full p-2 text-rose-200 hover:bg-rose-500/20"
-          onClick={onClose}
-          aria-label={`关闭 ${title}`}
-        >
-          <X className="h-4 w-4" />
-        </CyberButton>
+        <div>
+          <h2 className="text-base font-semibold text-slate-800 sm:text-lg">{title}</h2>
+          <p className="text-xs text-slate-500">{subtitle}</p>
+        </div>
       </header>
-      <div className="max-h-[70vh] overflow-y-auto p-4">{children}</div>
-    </MotionSection>
+      {children}
+    </motion.section>
   )
 }
 
@@ -197,187 +138,137 @@ function RecoveryModule({ onElapsedChange }) {
   })
   const [running, setRunning] = useState(false)
   const [elapsedMs, setElapsedMs] = useState(0)
+  const [focusMode, setFocusMode] = useState(false)
   const startRef = useRef(0)
 
-  useEffect(() => {
-    onElapsedChange(elapsedMs)
-  }, [elapsedMs, onElapsedChange])
+  useEffect(() => onElapsedChange(elapsedMs), [elapsedMs, onElapsedChange])
 
   useEffect(() => {
-    if (!running) {
-      return
-    }
-    const tick = () => {
-      setElapsedMs(Date.now() - startRef.current)
-    }
+    if (!running) return
+    const tick = () => setElapsedMs(Date.now() - startRef.current)
     tick()
-    const timer = window.setInterval(tick, 120)
+    const timer = window.setInterval(tick, 140)
     return () => window.clearInterval(timer)
   }, [running])
 
   const ratePerSecond = useMemo(() => {
     const denominator = settings.workDays * settings.workHours * 3600
-    if (!denominator) {
-      return 0
-    }
-    return settings.salary / denominator
+    return denominator ? settings.salary / denominator : 0
   }, [settings])
 
-  const earned = elapsedMs / 1000 * ratePerSecond
+  const earned = (elapsedMs / 1000) * ratePerSecond
   const cupCoverage = earned / 16
-  const tissueUsage = elapsedMs / 1000 * 0.0004
-  const scanColor =
-    Math.floor(elapsedMs / 450) % 2 === 0
-      ? 'rgba(0,255,159,0.18)'
-      : 'rgba(255,64,84,0.18)'
-  const tickerLines = [
-    `当前收益已覆盖：${cupCoverage.toFixed(2)} 杯瑞幸咖啡`,
-    `已消耗公司 ${tissueUsage.toFixed(3)} g 抽纸`,
-    `回收效率：${(ratePerSecond * 60).toFixed(2)} 元/分钟`,
-  ]
+  const tissueUsage = (elapsedMs / 1000) * 0.0004
 
-  const updateSetting = (field, next) => {
-    const parsed = Number(next)
-    setSettings((prev) => ({
-      ...prev,
-      [field]: Number.isNaN(parsed) ? 0 : parsed,
-    }))
+  const updateSetting = (field, value) => {
+    const parsed = Number(value)
+    setSettings((prev) => ({ ...prev, [field]: Number.isNaN(parsed) ? 0 : parsed }))
   }
 
-  const startRecovery = () => {
+  const toggleRun = () => {
+    if (running) {
+      setRunning(false)
+      return
+    }
     startRef.current = Date.now() - elapsedMs
     setRunning(true)
   }
 
-  const pauseRecovery = () => {
-    setRunning(false)
-  }
-
-  const resetRecovery = () => {
+  const reset = () => {
     setRunning(false)
     setElapsedMs(0)
     startRef.current = Date.now()
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-emerald-200/85">
-        本地高精度收益演算中，薪资数据仅存储于 localStorage，绝不上传。
+    <div className="space-y-5">
+      <p className="text-sm text-slate-600">
+        薪资参数完全保留在 localStorage，本地演算，不上传。
       </p>
       <div className="grid gap-3 sm:grid-cols-3">
-        <label className="space-y-1 text-xs text-emerald-300">
-          月薪 (CNY)
-          <input
-            className="w-full rounded-md border border-emerald-300/30 bg-black/35 px-3 py-2 text-emerald-100 outline-none transition focus:border-emerald-200"
-            type="number"
-            min="0"
-            value={settings.salary}
-            onChange={(event) => updateSetting('salary', event.target.value)}
-          />
-        </label>
-        <label className="space-y-1 text-xs text-emerald-300">
-          月工作日
-          <input
-            className="w-full rounded-md border border-emerald-300/30 bg-black/35 px-3 py-2 text-emerald-100 outline-none transition focus:border-emerald-200"
-            type="number"
-            min="0"
-            step="0.01"
-            value={settings.workDays}
-            onChange={(event) => updateSetting('workDays', event.target.value)}
-          />
-        </label>
-        <label className="space-y-1 text-xs text-emerald-300">
-          日工时
-          <input
-            className="w-full rounded-md border border-emerald-300/30 bg-black/35 px-3 py-2 text-emerald-100 outline-none transition focus:border-emerald-200"
-            type="number"
-            min="0"
-            step="0.1"
-            value={settings.workHours}
-            onChange={(event) => updateSetting('workHours', event.target.value)}
-          />
-        </label>
+        {[
+          { key: 'salary', label: '月薪（CNY）', step: '1' },
+          { key: 'workDays', label: '月工作日', step: '0.01' },
+          { key: 'workHours', label: '日工时', step: '0.1' },
+        ].map((item) => (
+          <label key={item.key} className="text-xs text-slate-500">
+            {item.label}
+            <input
+              className="mt-1.5 w-full rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-emerald-300"
+              type="number"
+              min="0"
+              step={item.step}
+              value={settings[item.key]}
+              onChange={(event) => updateSetting(item.key, event.target.value)}
+            />
+          </label>
+        ))}
       </div>
-      <div className="rounded-lg border border-emerald-300/20 bg-black/60 p-4 font-mono">
-        <div className="relative overflow-hidden rounded-md border border-emerald-300/30 bg-emerald-500/5 p-4">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              backgroundImage: `repeating-linear-gradient(0deg, transparent 0px, ${scanColor} 2px, transparent 4px)`,
-            }}
-          />
-          <p className="relative text-xs tracking-[0.3em] text-emerald-300/70">LCD PAYLOAD</p>
-          <p className="relative mt-2 text-3xl tracking-widest text-emerald-100">
-            {formatDuration(elapsedMs)}
-          </p>
-          <p className="relative mt-2 text-xl text-emerald-200">{formatCurrency(earned)}</p>
-        </div>
-        <MotionP
-          key={Math.floor(elapsedMs / 2000)}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-3 text-xs text-emerald-300/85"
-        >
-          {tickerLines[Math.floor(elapsedMs / 2000) % tickerLines.length]}
-        </MotionP>
+      <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white to-emerald-50 p-4">
+        <p className="text-xs tracking-[0.18em] text-slate-400">CALM RECOVERY BOARD</p>
+        <p className="mt-2 font-mono text-4xl text-slate-800">{formatDuration(elapsedMs)}</p>
+        <p className="mt-2 text-2xl font-semibold text-emerald-700">{formatCurrency(earned)}</p>
+        <p className="mt-2 text-sm text-slate-500">
+          可覆盖 {cupCoverage.toFixed(2)} 杯瑞幸，消耗抽纸约 {tissueUsage.toFixed(3)} g。
+        </p>
       </div>
       <div className="flex flex-wrap gap-2">
-        <CyberButton onClick={startRecovery}>
-          <Play className="mr-2 inline h-4 w-4" />
-          START RECOVERY
-        </CyberButton>
-        <CyberButton className="border-cyan-300/35 bg-cyan-500/10" onClick={pauseRecovery}>
-          <Pause className="mr-2 inline h-4 w-4" />
-          PAUSE
-        </CyberButton>
-        <CyberButton className="border-amber-300/35 bg-amber-500/10" onClick={resetRecovery}>
+        <CozyButton
+          onClick={toggleRun}
+          className={running ? 'border-rose-200 bg-rose-50 text-rose-700' : ''}
+        >
+          {running ? <Pause className="mr-2 inline h-4 w-4" /> : <Play className="mr-2 inline h-4 w-4" />}
+          {running ? '暂停回收' : '开始回收'}
+        </CozyButton>
+        <CozyButton onClick={reset} className="border-amber-200 bg-amber-50 text-amber-700">
           <RotateCcw className="mr-2 inline h-4 w-4" />
-          RESET
-        </CyberButton>
+          重置
+        </CozyButton>
+        <CozyButton onClick={() => setFocusMode((v) => !v)} className="border-sky-200 bg-sky-50 text-sky-700">
+          <Sparkles className="mr-2 inline h-4 w-4" />
+          {focusMode ? '退出沉浸' : '进入沉浸'}
+        </CozyButton>
       </div>
 
       <AnimatePresence>
-        {running ? (
-          <MotionDiv
+        {focusMode ? (
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-6 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-emerald-50/90 p-5 backdrop-blur-md"
           >
-            <MotionDiv
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className={`relative w-full max-w-2xl overflow-hidden rounded-xl p-6 ${GLOBAL_GLASS}`}
+            <motion.div
+              initial={{ y: 16, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className={`w-full max-w-2xl p-7 ${SOFT_PANEL}`}
             >
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(0deg, transparent 0px, ${scanColor} 2px, transparent 4px)`,
-                }}
-              />
-              <p className="relative text-xs tracking-[0.35em] text-emerald-300/75">
-                FULLSCREEN RECOVERY MODE
+              <p className="text-xs tracking-[0.18em] text-slate-400">RECOVERY FOCUS MODE</p>
+              <p className="mt-3 font-mono text-6xl text-slate-800">{formatDuration(elapsedMs)}</p>
+              <p className="mt-3 text-3xl font-semibold text-emerald-700">{formatCurrency(earned)}</p>
+              <p className="mt-3 text-sm text-slate-500">
+                当前收益可覆盖 {cupCoverage.toFixed(2)} 杯咖啡，抽纸消耗 {tissueUsage.toFixed(3)} g。
               </p>
-              <p className="relative mt-5 text-5xl font-semibold text-emerald-100 sm:text-6xl">
-                {formatDuration(elapsedMs)}
-              </p>
-              <p className="relative mt-3 text-2xl text-emerald-200">{formatCurrency(earned)}</p>
-              <p className="relative mt-3 text-sm text-emerald-300/85">
-                当前收益已覆盖：{cupCoverage.toFixed(2)} 杯瑞幸咖啡 ｜ 已消耗公司{' '}
-                {tissueUsage.toFixed(3)} g 抽纸
-              </p>
-              <div className="relative mt-6 flex gap-3">
-                <CyberButton className="border-cyan-300/35 bg-cyan-500/10" onClick={pauseRecovery}>
-                  <Pause className="mr-2 inline h-4 w-4" />
-                  EXIT FULLSCREEN
-                </CyberButton>
-                <CyberButton className="border-amber-300/35 bg-amber-500/10" onClick={resetRecovery}>
-                  <RotateCcw className="mr-2 inline h-4 w-4" />
-                  RESET TIMER
-                </CyberButton>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <CozyButton onClick={toggleRun}>
+                  {running ? (
+                    <>
+                      <Pause className="mr-2 inline h-4 w-4" />
+                      暂停计时
+                    </>
+                  ) : (
+                    <>
+                      <Play className="mr-2 inline h-4 w-4" />
+                      继续计时
+                    </>
+                  )}
+                </CozyButton>
+                <CozyButton onClick={() => setFocusMode(false)} className="border-slate-200 bg-white text-slate-600">
+                  关闭沉浸
+                </CozyButton>
               </div>
-            </MotionDiv>
-          </MotionDiv>
+            </motion.div>
+          </motion.div>
         ) : null}
       </AnimatePresence>
     </div>
@@ -385,136 +276,122 @@ function RecoveryModule({ onElapsedChange }) {
 }
 
 function VoidWalkerModule({ durations, setDurations }) {
-  const [activeStatus, setActiveStatus] = useState(null)
+  const [selectedStatus, setSelectedStatus] = useState('statusA')
+  const [running, setRunning] = useState(false)
   const [posterUrl, setPosterUrl] = useState('')
   const lastTickRef = useRef(0)
 
   useEffect(() => {
-    if (!activeStatus) {
-      return
-    }
+    if (!running) return
     lastTickRef.current = Date.now()
     const timer = window.setInterval(() => {
       const now = Date.now()
       const delta = now - lastTickRef.current
       lastTickRef.current = now
-      setDurations((prev) => ({
-        ...prev,
-        [activeStatus]: prev[activeStatus] + delta,
-      }))
-    }, 200)
+      setDurations((prev) => ({ ...prev, [selectedStatus]: prev[selectedStatus] + delta }))
+    }, 220)
     return () => window.clearInterval(timer)
-  }, [activeStatus, setDurations])
+  }, [running, selectedStatus, setDurations])
 
   const totalMs = durations.statusA + durations.statusB + durations.statusC
 
   const generatePoster = () => {
     const canvas = document.createElement('canvas')
     canvas.width = 720
-    canvas.height = 1040
+    canvas.height = 980
     const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
+    if (!ctx) return
+
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-    gradient.addColorStop(0, '#050505')
-    gradient.addColorStop(1, '#00291d')
+    gradient.addColorStop(0, '#f4fbf6')
+    gradient.addColorStop(1, '#d9f3e5')
     ctx.fillStyle = gradient
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    ctx.strokeStyle = '#00ff9f'
+    ctx.fillStyle = '#2f5c4a'
+    ctx.font = '700 48px "Inter", sans-serif'
+    ctx.fillText('今日职场隐身度：98%', 48, 120)
+    ctx.font = '500 26px "Inter", sans-serif'
+    ctx.fillText(`总摸鱼时长：${formatDuration(totalMs)}`, 48, 210)
+    ctx.fillText(`Status_A 带薪排泄：${formatDuration(durations.statusA)}`, 48, 280)
+    ctx.fillText(`Status_B 会议折磨：${formatDuration(durations.statusB)}`, 48, 340)
+    ctx.fillText(`Status_C 构建等待：${formatDuration(durations.statusC)}`, 48, 400)
+
+    ctx.strokeStyle = '#8bcbb1'
     ctx.lineWidth = 2
-    ctx.strokeRect(24, 24, canvas.width - 48, canvas.height - 48)
-
-    ctx.fillStyle = '#96ffd1'
-    ctx.font = 'bold 42px "JetBrains Mono", monospace'
-    ctx.fillText('今日职场隐身度：98%', 52, 120)
-
-    ctx.font = '24px "JetBrains Mono", monospace'
-    ctx.fillText(`总摸鱼时长：${formatDuration(totalMs)}`, 52, 220)
-    ctx.fillText(`带薪排泄中：${formatDuration(durations.statusA)}`, 52, 290)
-    ctx.fillText(`会议折磨中：${formatDuration(durations.statusB)}`, 52, 350)
-    ctx.fillText(`构建摸鱼中：${formatDuration(durations.statusC)}`, 52, 410)
-    ctx.fillStyle = '#5ef5ff'
-    ctx.fillText('CYBER-OX LAB // VOID WALKER', 52, 530)
-
-    ctx.strokeStyle = 'rgba(0,255,159,0.35)'
-    for (let i = 0; i < 9; i += 1) {
-      ctx.beginPath()
-      ctx.moveTo(52, 600 + i * 40)
-      ctx.lineTo(canvas.width - 52, 600 + i * 40)
-      ctx.stroke()
-    }
-
+    ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60)
     setPosterUrl(canvas.toDataURL('image/png'))
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-emerald-200/85">
-        多维摸鱼时间聚合器：每次只激活一个状态，持续累加并生成 Canvas 海报。
+    <div className="space-y-5">
+      <p className="text-sm text-slate-600">
+        把“摸鱼状态”做成柔和 tab 切换，一次专注一个状态，不再一屏 START。
       </p>
-      <div className="grid gap-3">
-        {VOID_STATUS.map((status) => {
-          const active = activeStatus === status.id
+      <div className="flex flex-wrap gap-2">
+        {VOID_STATUS.map((item) => {
+          const active = item.id === selectedStatus
           return (
-            <MotionDiv
-              key={status.id}
-              layout
-              className="rounded-lg border border-emerald-300/20 bg-black/45 p-3"
+            <CozyButton
+              key={item.id}
+              className={active ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : ''}
+              onClick={() => setSelectedStatus(item.id)}
             >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-emerald-100">{status.label}</p>
-                <p className="font-mono text-sm text-emerald-200">{formatDuration(durations[status.id])}</p>
-              </div>
-              <div className="mt-3">
-                <CyberButton
-                  className={active ? 'border-rose-300/40 bg-rose-500/15' : ''}
-                  onClick={() => setActiveStatus(active ? null : status.id)}
-                >
-                  {active ? (
-                    <>
-                      <Pause className="mr-2 inline h-4 w-4" />
-                      STOP
-                    </>
-                  ) : (
-                    <>
-                      <Play className="mr-2 inline h-4 w-4" />
-                      START
-                    </>
-                  )}
-                </CyberButton>
-              </div>
-            </MotionDiv>
+              {item.label}
+            </CozyButton>
           )
         })}
       </div>
-      <div className="rounded-lg border border-emerald-300/20 bg-black/50 p-3">
-        <p className="text-xs text-emerald-300/80">聚合摸鱼总时长</p>
-        <p className="mt-2 font-mono text-2xl text-emerald-100">{formatDuration(totalMs)}</p>
+      <div className="rounded-2xl border border-emerald-100 bg-white/80 p-4">
+        <p className="text-xs text-slate-500">
+          当前模式：{VOID_STATUS.find((item) => item.id === selectedStatus)?.desc}
+        </p>
+        <p className="mt-1 font-mono text-3xl text-slate-800">{formatDuration(durations[selectedStatus])}</p>
+        <div className="mt-3">
+          <CozyButton
+            onClick={() => setRunning((v) => !v)}
+            className={running ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-sky-200 bg-sky-50 text-sky-700'}
+          >
+            {running ? <Pause className="mr-2 inline h-4 w-4" /> : <Play className="mr-2 inline h-4 w-4" />}
+            {running ? '暂停当前状态' : '开始当前状态'}
+          </CozyButton>
+        </div>
+      </div>
+      <div className="grid gap-2">
+        {VOID_STATUS.map((item) => {
+          const ratio = totalMs ? (durations[item.id] / totalMs) * 100 : 0
+          return (
+            <div key={item.id} className="rounded-xl border border-emerald-100 bg-white/80 p-3">
+              <div className="mb-2 flex justify-between text-sm text-slate-600">
+                <span>{item.label}</span>
+                <span className="font-mono">{formatDuration(durations[item.id])}</span>
+              </div>
+              <div className="h-2 rounded-full bg-emerald-50">
+                <motion.div
+                  animate={{ width: `${ratio}%` }}
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300"
+                />
+              </div>
+            </div>
+          )
+        })}
       </div>
       <div className="flex flex-wrap gap-2">
-        <CyberButton onClick={generatePoster}>
+        <CozyButton onClick={generatePoster}>
           <Sparkles className="mr-2 inline h-4 w-4" />
           生成报告
-        </CyberButton>
-        <CyberButton
-          className="border-amber-300/35 bg-amber-500/10"
-          onClick={() =>
-            setDurations({
-              statusA: 0,
-              statusB: 0,
-              statusC: 0,
-            })
-          }
+        </CozyButton>
+        <CozyButton
+          onClick={() => setDurations({ statusA: 0, statusB: 0, statusC: 0 })}
+          className="border-amber-200 bg-amber-50 text-amber-700"
         >
           <RotateCcw className="mr-2 inline h-4 w-4" />
           清零计时
-        </CyberButton>
+        </CozyButton>
       </div>
       {posterUrl ? (
-        <div className="rounded-lg border border-emerald-300/20 bg-black/40 p-3">
-          <img alt="今日职场隐身度海报" src={posterUrl} className="w-full rounded-md border border-emerald-300/30" />
+        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-3">
+          <img alt="今日职场隐身度海报" src={posterUrl} className="w-full rounded-xl" />
         </div>
       ) : null}
     </div>
@@ -530,33 +407,26 @@ function JargonRefactorModule() {
   const fallbackTransform = useCallback(
     (text) => {
       const trimmed = text.trim()
-      if (JARGON_EXAMPLES[trimmed]) {
-        return JARGON_EXAMPLES[trimmed]
-      }
+      if (JARGON_EXAMPLES[trimmed]) return JARGON_EXAMPLES[trimmed]
       if (mode === '向上管理') {
-        return `结合当前业务优先级评估，建议将「${trimmed}」纳入下一阶段策略队列，以保障关键路径稳定推进。`
+        return `结合当前业务优先级，建议将「${trimmed}」纳入下一阶段策略队列，以保障关键路径稳定推进。`
       }
       if (mode === '平级对齐') {
-        return `围绕共同目标建议我们同步「${trimmed}」的上下文，并在职责边界内建立可追踪的协同闭环。`
+        return `围绕共同目标，建议我们同步「${trimmed}」上下文，并建立可追踪的协同闭环。`
       }
-      return `从团队可持续交付角度看，「${trimmed}」需通过分层拆解与节奏控制，降低执行摩擦并提升承接效率。`
+      return `从团队可持续交付角度，「${trimmed}」可通过分层拆解与节奏控制，提升整体承接效率。`
     },
     [mode],
   )
 
   const refactor = async () => {
-    if (!inputValue.trim()) {
-      return
-    }
+    if (!inputValue.trim()) return
     setLoading(true)
     try {
-      const response = await fetch('/api/refactor', {
+      const response = await fetch(REFACTOR_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode,
-          text: inputValue,
-        }),
+        body: JSON.stringify({ mode, text: inputValue }),
       })
       if (response.ok) {
         const data = await response.json()
@@ -572,31 +442,31 @@ function JargonRefactorModule() {
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-emerald-200/85">
-        AI 职场黑话中转站，接口已预留 <code className="rounded bg-black/45 px-1.5 py-0.5">fetch('/api/refactor')</code>。
+    <div className="space-y-5">
+      <p className="text-sm text-slate-600">
+        已接入可配置接口：<code className="rounded bg-emerald-50 px-1.5 py-0.5">{REFACTOR_ENDPOINT}</code>
       </p>
       <div className="flex flex-wrap gap-2">
         {['向上管理', '平级对齐', '向下兼容'].map((targetMode) => (
-          <CyberButton
+          <CozyButton
             key={targetMode}
-            className={mode === targetMode ? 'border-cyan-300/60 bg-cyan-500/20 text-cyan-100' : ''}
             onClick={() => setMode(targetMode)}
+            className={mode === targetMode ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : ''}
           >
             {targetMode}
-          </CyberButton>
+          </CozyButton>
         ))}
       </div>
-      <label className="block space-y-2 text-xs text-emerald-300">
+      <label className="block text-xs text-slate-500">
         原始发言
         <textarea
-          className="h-24 w-full resize-none rounded-md border border-emerald-300/30 bg-black/35 px-3 py-2 text-sm text-emerald-100 outline-none transition focus:border-emerald-200"
+          className="mt-1.5 h-28 w-full resize-none rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-emerald-300"
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
-          placeholder="输入你的真实情绪..."
+          placeholder="输入你最真实的一句话..."
         />
       </label>
-      <CyberButton onClick={refactor} className="min-w-36">
+      <CozyButton onClick={refactor} className="border-sky-200 bg-sky-50 text-sky-700">
         {loading ? (
           <>
             <LoaderCircle className="mr-2 inline h-4 w-4 animate-spin" />
@@ -608,10 +478,10 @@ function JargonRefactorModule() {
             执行语义重塑
           </>
         )}
-      </CyberButton>
-      <div className="rounded-lg border border-emerald-300/20 bg-black/45 p-3">
-        <p className="text-xs text-emerald-300/75">重塑输出</p>
-        <p className="mt-2 text-sm leading-7 text-emerald-100">
+      </CozyButton>
+      <div className="rounded-2xl border border-emerald-100 bg-white/90 p-4">
+        <p className="text-xs text-slate-500">重塑输出</p>
+        <p className="mt-2 leading-7 text-slate-700">
           {outputValue || '在当前资源排期下，该方案的投入产出比（ROI）尚未达到临界点。'}
         </p>
       </div>
@@ -627,23 +497,16 @@ function CyberOxBoardModule() {
   const [bossDistance, setBossDistance] = useState(67.4)
 
   useEffect(() => {
-    const ticker = window.setInterval(
-      () => setCountdownMs((value) => Math.max(0, value - 1000)),
-      1000,
-    )
-    const bugTicker = window.setInterval(
-      () => setBugCount((count) => count + Math.floor(Math.random() * 3)),
-      2100,
-    )
+    const ticker = window.setInterval(() => setCountdownMs((v) => Math.max(0, v - 1000)), 1000)
+    const bugTicker = window.setInterval(() => setBugCount((v) => v + Math.floor(Math.random() * 3)), 2100)
     const caffeineTicker = window.setInterval(
-      () => setCaffeine((value) => Math.max(5, Math.min(100, value + (Math.random() > 0.5 ? 4 : -3)))),
+      () => setCaffeine((v) => Math.max(5, Math.min(100, v + (Math.random() > 0.5 ? 4 : -3)))),
       1600,
     )
     const bossTicker = window.setInterval(
-      () => setBossDistance((distance) => Math.max(0.8, Math.min(180, distance + (Math.random() - 0.45) * 18))),
+      () => setBossDistance((v) => Math.max(0.8, Math.min(180, v + (Math.random() - 0.45) * 18))),
       2500,
     )
-
     return () => {
       window.clearInterval(ticker)
       window.clearInterval(bugTicker)
@@ -658,46 +521,44 @@ function CyberOxBoardModule() {
   const seconds = String(Math.floor((countdownMs % (1000 * 60)) / 1000)).padStart(2, '0')
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-emerald-200/85">
-        FUI 体征看板：Bug 存量递增，离职倒计时精确到秒，老板距离雷达实时扫描。
-      </p>
+    <div className="space-y-5">
+      <p className="text-sm text-slate-600">柔和版体征看板：波动有，但看起来不焦虑。</p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-lg border border-emerald-300/20 bg-black/45 p-3">
-          <p className="text-xs text-emerald-300/75">Bug 存量</p>
-          <p className="mt-2 text-3xl font-semibold text-emerald-100">{bugCount}</p>
+        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-4">
+          <p className="text-xs text-slate-500">Bug 存量</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-800">{bugCount}</p>
         </div>
-        <div className="rounded-lg border border-emerald-300/20 bg-black/45 p-3">
-          <p className="text-xs text-emerald-300/75">咖啡因水平</p>
-          <div className="mt-3 h-4 rounded-full border border-emerald-300/35 bg-black/60 p-0.5">
-            <MotionDiv
+        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-4">
+          <p className="text-xs text-slate-500">咖啡因水平</p>
+          <div className="mt-3 h-3 rounded-full bg-emerald-50">
+            <motion.div
               animate={{ width: `${caffeine}%` }}
-              className="h-full rounded-full bg-gradient-to-r from-emerald-300 via-cyan-300 to-emerald-500"
+              className="h-full rounded-full bg-gradient-to-r from-emerald-300 to-cyan-300"
             />
           </div>
-          <p className="mt-2 flex items-center gap-2 text-sm text-emerald-100">
+          <p className="mt-2 flex items-center gap-2 text-sm text-slate-700">
             <BatteryMedium className="h-4 w-4" />
             {caffeine}%
           </p>
         </div>
-        <div className="rounded-lg border border-emerald-300/20 bg-black/45 p-3">
-          <p className="text-xs text-emerald-300/75">离职倒计时</p>
-          <p className="mt-2 font-mono text-xl text-emerald-100">{`${days}天 ${hours}:${minutes}:${seconds}`}</p>
+        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-4">
+          <p className="text-xs text-slate-500">离职倒计时</p>
+          <p className="mt-2 font-mono text-xl text-slate-800">{`${days}天 ${hours}:${minutes}:${seconds}`}</p>
         </div>
-        <div className="rounded-lg border border-emerald-300/20 bg-black/45 p-3">
-          <p className="mb-3 text-xs text-emerald-300/75">老板距离（雷达）</p>
+        <div className="rounded-2xl border border-emerald-100 bg-white/85 p-4">
+          <p className="mb-2 text-xs text-slate-500">老板距离（雷达）</p>
           <div className="relative mx-auto h-24 w-24">
-            <Radar className="absolute inset-0 m-auto h-8 w-8 text-emerald-200" />
+            <Radar className="absolute inset-0 m-auto h-8 w-8 text-emerald-500" />
             {[0, 1, 2].map((ring) => (
-              <MotionSpan
+              <motion.span
                 key={ring}
-                className="absolute inset-0 rounded-full border border-emerald-300/35"
-                animate={{ scale: [0.4, 1.1], opacity: [0.65, 0] }}
+                className="absolute inset-0 rounded-full border border-emerald-200"
+                animate={{ scale: [0.35, 1.08], opacity: [0.45, 0] }}
                 transition={{ duration: 2.2, repeat: Infinity, delay: ring * 0.55 }}
               />
             ))}
           </div>
-          <p className="mt-2 text-center text-sm text-emerald-100">{bossDistance.toFixed(1)} m</p>
+          <p className="mt-2 text-center text-sm text-slate-700">{bossDistance.toFixed(1)} m</p>
         </div>
       </div>
     </div>
@@ -714,12 +575,7 @@ function WeeklyCatalystModule({ fishMs }) {
   const keywords = ['赋能', '闭环', '颗粒度', '抓手', '落地']
 
   const toggleKeyword = (keyword) => {
-    setSelectedKeywords((prev) => {
-      if (prev.includes(keyword)) {
-        return prev.filter((item) => item !== keyword)
-      }
-      return [...prev, keyword]
-    })
+    setSelectedKeywords((prev) => (prev.includes(keyword) ? prev.filter((k) => k !== keyword) : [...prev, keyword]))
   }
 
   const generateReport = () => {
@@ -730,29 +586,29 @@ function WeeklyCatalystModule({ fishMs }) {
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-emerald-200/85">周报/日报一键灌水工具，会自动引用聚合摸鱼时长。</p>
+    <div className="space-y-5">
+      <p className="text-sm text-slate-600">轻松点关键词，再点一下就能出一段“看起来很努力”的文案。</p>
       <div className="flex flex-wrap gap-2">
         {keywords.map((keyword) => {
           const checked = selectedKeywords.includes(keyword)
           return (
-            <CyberButton
+            <CozyButton
               key={keyword}
-              className={checked ? 'border-cyan-300/55 bg-cyan-500/20 text-cyan-100' : ''}
+              className={checked ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : ''}
               onClick={() => toggleKeyword(keyword)}
             >
               {checked ? '☑' : '☐'} {keyword}
-            </CyberButton>
+            </CozyButton>
           )
         })}
       </div>
-      <CyberButton onClick={generateReport}>
+      <CozyButton onClick={generateReport}>
         <Sparkles className="mr-2 inline h-4 w-4" />
         一键生成周报语料
-      </CyberButton>
-      <div className="rounded-lg border border-emerald-300/20 bg-black/45 p-3">
-        <p className="text-xs text-emerald-300/75">自动文案输出</p>
-        <p className="mt-2 text-sm leading-7 text-emerald-100">
+      </CozyButton>
+      <div className="rounded-2xl border border-emerald-100 bg-white/90 p-4">
+        <p className="text-xs text-slate-500">自动文案输出</p>
+        <p className="mt-2 leading-7 text-slate-700">
           {report ||
             '由于本周深挖底层架构逻辑，导致表面产出呈现滞后性，实则在为下周爆发式增长做势能储备。'}
         </p>
@@ -778,9 +634,7 @@ function CPUConsolerModule() {
   }, [triggerConsoler])
 
   useEffect(() => {
-    if (!toastMessage) {
-      return
-    }
+    if (!toastMessage) return
     const clearTimer = window.setTimeout(() => setToastMessage(''), 4800)
     return () => window.clearTimeout(clearTimer)
   }, [toastMessage])
@@ -814,7 +668,7 @@ function CPUConsolerModule() {
       osc.type = 'square'
       osc.frequency.value = frequency
       gain.gain.setValueAtTime(0.0001, cursor)
-      gain.gain.exponentialRampToValueAtTime(0.045, cursor + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.04, cursor + 0.02)
       gain.gain.exponentialRampToValueAtTime(0.0001, cursor + 0.28)
       osc.connect(gain)
       gain.connect(context.destination)
@@ -824,7 +678,7 @@ function CPUConsolerModule() {
       activeNodeRef.current = osc
     })
     setAudioMode('chant')
-    window.setTimeout(() => setAudioMode('idle'), 3300)
+    window.setTimeout(() => setAudioMode('idle'), 3200)
   }
 
   const playWhiteNoise = async () => {
@@ -832,14 +686,12 @@ function CPUConsolerModule() {
     const context = await getContext()
     const buffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate)
     const data = buffer.getChannelData(0)
-    for (let index = 0; index < data.length; index += 1) {
-      data[index] = Math.random() * 2 - 1
-    }
+    for (let i = 0; i < data.length; i += 1) data[i] = Math.random() * 2 - 1
     const source = context.createBufferSource()
     const gain = context.createGain()
     const filter = context.createBiquadFilter()
     filter.type = 'lowpass'
-    filter.frequency.value = 900
+    filter.frequency.value = 980
     source.buffer = buffer
     source.loop = true
     gain.gain.value = 0.08
@@ -852,41 +704,39 @@ function CPUConsolerModule() {
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-emerald-200/85">
-        反向 PUA 情绪补给站，每 15 分钟自动尝试弹窗一次，可手动触发深度安慰音频。
-      </p>
+    <div className="space-y-5">
+      <p className="text-sm text-slate-600">反向 PUA 补给站，每 15 分钟会弹一次温柔提醒。</p>
       <div className="flex flex-wrap gap-2">
-        <CyberButton onClick={triggerConsoler}>
+        <CozyButton onClick={triggerConsoler}>
           <Brain className="mr-2 inline h-4 w-4" />
           立即补给
-        </CyberButton>
-        <CyberButton className="border-cyan-300/35 bg-cyan-500/10" onClick={playChant}>
+        </CozyButton>
+        <CozyButton onClick={playChant} className="border-cyan-200 bg-cyan-50 text-cyan-700">
           <Play className="mr-2 inline h-4 w-4" />
-          深度安慰：8-bit 大悲咒
-        </CyberButton>
-        <CyberButton className="border-sky-300/35 bg-sky-500/10" onClick={playWhiteNoise}>
+          8-bit 大悲咒
+        </CozyButton>
+        <CozyButton onClick={playWhiteNoise} className="border-sky-200 bg-sky-50 text-sky-700">
           <Play className="mr-2 inline h-4 w-4" />
-          深度安慰：赛博白噪音
-        </CyberButton>
-        <CyberButton className="border-rose-300/35 bg-rose-500/10" onClick={stopAudio}>
+          赛博白噪音
+        </CozyButton>
+        <CozyButton onClick={stopAudio} className="border-rose-200 bg-rose-50 text-rose-700">
           <Pause className="mr-2 inline h-4 w-4" />
           停止音频
-        </CyberButton>
+        </CozyButton>
       </div>
-      <p className="text-xs text-emerald-300/75">
-        当前音频状态：{audioMode === 'idle' ? '静默' : audioMode === 'chant' ? '8-bit 咒文播放中' : '白噪音循环中'}
+      <p className="text-xs text-slate-500">
+        当前音频：{audioMode === 'idle' ? '静默' : audioMode === 'chant' ? '8-bit 咒文中' : '白噪音循环中'}
       </p>
       <AnimatePresence>
         {toastMessage ? (
-          <MotionDiv
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 30 }}
-            className={`rounded-lg px-4 py-3 text-sm text-emerald-100 ${GLOBAL_GLASS}`}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            className="rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-700"
           >
             {toastMessage}
-          </MotionDiv>
+          </motion.div>
         ) : null}
       </AnimatePresence>
     </div>
@@ -895,9 +745,7 @@ function CPUConsolerModule() {
 
 function LevatorAniModule() {
   const [permission, setPermission] = useState(() => {
-    if (typeof window === 'undefined' || !('Notification' in window)) {
-      return 'unsupported'
-    }
+    if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported'
     return Notification.permission
   })
   const [intervalMinutes, setIntervalMinutes] = useLocalStorageState('cyber-ox-levator-interval', 30)
@@ -906,13 +754,11 @@ function LevatorAniModule() {
   const titleRef = useRef(typeof document !== 'undefined' ? document.title : '')
 
   const flashTitle = () => {
-    if (typeof document === 'undefined') {
-      return
-    }
+    if (typeof document === 'undefined') return
     const baseTitle = titleRef.current || 'Cyber-Ox Lab'
     let ticks = 0
     const timer = window.setInterval(() => {
-      document.title = ticks % 2 === 0 ? '🚨 提肛指令已下达' : baseTitle
+      document.title = ticks % 2 === 0 ? '🚨 提肛提醒' : baseTitle
       ticks += 1
       if (ticks > 10) {
         window.clearInterval(timer)
@@ -926,65 +772,57 @@ function LevatorAniModule() {
       '[🚨 紧急指令]：检测到臀部受压过大，请立即执行一次 3 秒深层收缩，守护牛马最后的尊严。'
     setLastTrigger(new Date().toLocaleTimeString('zh-CN', { hour12: false }))
     flashTitle()
-    if (permission === 'granted' && 'Notification' in window) {
-      new Notification(message)
-    }
+    if (permission === 'granted' && 'Notification' in window) new Notification(message)
   }, [permission])
 
   useEffect(() => {
-    if (!active) {
-      return
-    }
+    if (!active) return
     const timer = window.setInterval(fireReminder, Math.max(1, intervalMinutes) * 60 * 1000)
     return () => window.clearInterval(timer)
   }, [active, fireReminder, intervalMinutes])
 
   const requestPermission = async () => {
-    if (!('Notification' in window)) {
-      return
-    }
+    if (!('Notification' in window)) return
     const next = await Notification.requestPermission()
     setPermission(next)
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-emerald-200/85">
-        Web Notification API + 标签栏图标闪烁提醒机制，保护久坐工位下的最后尊严。
-      </p>
+    <div className="space-y-5">
+      <p className="text-sm text-slate-600">通知 + 标题闪烁双保险，提醒你别坐太久。</p>
       <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
-        <label className="space-y-1 text-xs text-emerald-300">
+        <label className="text-xs text-slate-500">
           提醒间隔（分钟）
           <input
-            className="w-full rounded-md border border-emerald-300/30 bg-black/35 px-3 py-2 text-emerald-100 outline-none transition focus:border-emerald-200"
+            className="mt-1.5 w-full rounded-xl border border-emerald-100 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-emerald-300"
             type="number"
             min="1"
             value={intervalMinutes}
             onChange={(event) => setIntervalMinutes(Number(event.target.value) || 1)}
           />
         </label>
-        <div className="rounded-md border border-emerald-300/20 bg-black/45 px-3 py-2 text-xs text-emerald-200">
+        <div className="rounded-xl border border-emerald-100 bg-white px-3 py-2 text-xs text-slate-600">
           通知权限：{permission}
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        <CyberButton onClick={requestPermission}>
+        <CozyButton onClick={requestPermission}>
           <BellRing className="mr-2 inline h-4 w-4" />
           申请通知权限
-        </CyberButton>
-        <CyberButton
-          className={active ? 'border-rose-300/45 bg-rose-500/15' : 'border-cyan-300/35 bg-cyan-500/12'}
-          onClick={() => setActive((value) => !value)}
+        </CozyButton>
+        <CozyButton
+          onClick={() => setActive((v) => !v)}
+          className={active ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-sky-200 bg-sky-50 text-sky-700'}
         >
           <AlarmClock className="mr-2 inline h-4 w-4" />
           {active ? '停止自动提醒' : '启动自动提醒'}
-        </CyberButton>
-        <CyberButton className="border-amber-300/35 bg-amber-500/10" onClick={fireReminder}>
+        </CozyButton>
+        <CozyButton onClick={fireReminder} className="border-amber-200 bg-amber-50 text-amber-700">
           <ShieldAlert className="mr-2 inline h-4 w-4" />
           立即提醒一次
-        </CyberButton>
+        </CozyButton>
       </div>
-      <div className="rounded-lg border border-emerald-300/20 bg-black/45 p-3 text-sm text-emerald-100">
+      <div className="rounded-2xl border border-emerald-100 bg-white/90 p-4 text-sm text-slate-700">
         最近触发时间：{lastTrigger}
       </div>
     </div>
@@ -1001,22 +839,23 @@ function DesktopWorkspace() {
     statusB: 0,
     statusC: 0,
   })
-  const validModule = moduleId ? MODULES.some((moduleItem) => moduleItem.id === moduleId) : true
 
+  const validModule = moduleId ? MODULES.some((item) => item.id === moduleId) : true
   const mergedOpenModules = useMemo(() => {
     if (moduleId && validModule && !openModules.includes(moduleId)) {
       return [...openModules, moduleId]
     }
     return openModules
   }, [moduleId, openModules, validModule])
+  const activeModuleId = moduleId || mergedOpenModules[mergedOpenModules.length - 1] || null
+
+  const fishMs = useMemo(
+    () => recoveryElapsedMs + voidDurations.statusA + voidDurations.statusB + voidDurations.statusC,
+    [recoveryElapsedMs, voidDurations],
+  )
 
   const openModule = (id) => {
-    setOpenModules((prev) => {
-      if (prev.includes(id)) {
-        return [...prev.filter((item) => item !== id), id]
-      }
-      return [...prev, id]
-    })
+    setOpenModules((prev) => (prev.includes(id) ? prev : [...prev, id]))
     navigate(`/module/${id}`)
   }
 
@@ -1028,106 +867,121 @@ function DesktopWorkspace() {
     }
   }
 
-  const focusModule = (id) => {
-    setOpenModules((prev) => [...prev.filter((item) => item !== id), id])
-  }
-
-  const fishMs = useMemo(
-    () => recoveryElapsedMs + voidDurations.statusA + voidDurations.statusB + voidDurations.statusC,
-    [recoveryElapsedMs, voidDurations],
-  )
-
-  if (!validModule) {
-    return <Navigate to="/" replace />
-  }
-
   const renderModule = (id) => {
-    if (id === 'recovery') {
-      return <RecoveryModule onElapsedChange={setRecoveryElapsedMs} />
-    }
-    if (id === 'void') {
-      return <VoidWalkerModule durations={voidDurations} setDurations={setVoidDurations} />
-    }
-    if (id === 'jargon') {
-      return <JargonRefactorModule />
-    }
-    if (id === 'board') {
-      return <CyberOxBoardModule />
-    }
-    if (id === 'weekly') {
-      return <WeeklyCatalystModule fishMs={fishMs} />
-    }
-    if (id === 'consoler') {
-      return <CPUConsolerModule />
-    }
-    if (id === 'levator') {
-      return <LevatorAniModule />
-    }
+    if (id === 'recovery') return <RecoveryModule onElapsedChange={setRecoveryElapsedMs} />
+    if (id === 'void') return <VoidWalkerModule durations={voidDurations} setDurations={setVoidDurations} />
+    if (id === 'jargon') return <JargonRefactorModule />
+    if (id === 'board') return <CyberOxBoardModule />
+    if (id === 'weekly') return <WeeklyCatalystModule fishMs={fishMs} />
+    if (id === 'consoler') return <CPUConsolerModule />
+    if (id === 'levator') return <LevatorAniModule />
     return null
   }
 
-  return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050505] p-4 text-emerald-100 sm:p-6">
-      <div className="pointer-events-none absolute inset-0 opacity-70">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(0,255,159,0.12),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px]" />
-      </div>
+  if (!validModule) return <Navigate to="/" replace />
 
-      <section className={`relative z-10 rounded-xl p-4 sm:p-5 ${GLOBAL_GLASS}`}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
+  return (
+    <main className="min-h-screen p-4 text-slate-700 sm:p-6">
+      <section className={`p-5 sm:p-6 ${SOFT_PANEL}`}>
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-lg font-semibold text-emerald-100 sm:text-xl">
-              🦾 Cyber-Ox Lab (赛博牛马实验室) v1.0
+            <h1 className="text-xl font-semibold text-slate-800 sm:text-2xl">
+              🦾 Cyber-Ox Lab · 轻松版工作台
             </h1>
-            <p className="text-xs text-emerald-300/80">代码要硬核，视觉要赛博，情绪要到位。</p>
+            <p className="mt-1 text-sm text-slate-500">
+              放松一点，再卷一点。页面做柔和，心态别太硬。
+            </p>
           </div>
-          <div className="rounded-md border border-emerald-300/25 bg-black/35 px-3 py-2 text-xs">
-            TOTAL STEALTH TIME: {formatDuration(fishMs)}
+          <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-sm text-slate-600">
+            <div className="flex items-center gap-2">
+              <Timer className="h-4 w-4 text-emerald-600" />
+              总摸鱼时长：<span className="font-mono text-slate-800">{formatDuration(fishMs)}</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="relative z-10 mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-        {MODULES.map((moduleItem) => (
-          <MotionDiv key={moduleItem.id} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-            <MotionButton
-              type="button"
-              className={`w-full rounded-lg p-3 text-left transition ${GLOBAL_GLASS}`}
-              onClick={() => openModule(moduleItem.id)}
-            >
-              <moduleItem.icon className="h-5 w-5 text-emerald-200" />
-              <p className="mt-2 text-sm text-emerald-100">{moduleItem.title}</p>
-              <p className="mt-1 text-[11px] text-emerald-300/75">{moduleItem.subtitle}</p>
-            </MotionButton>
-          </MotionDiv>
-        ))}
+      <section className={`mt-4 p-3 sm:p-4 ${SOFT_PANEL}`}>
+        <div className="flex gap-3 overflow-x-auto pb-1">
+          {MODULES.map((item) => {
+            const selected = activeModuleId === item.id
+            return (
+              <motion.button
+                key={item.id}
+                type="button"
+                whileHover={{ y: -1.5 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => openModule(item.id)}
+                className={`min-w-[170px] rounded-2xl border p-3 text-left transition ${
+                  selected
+                    ? 'border-emerald-300 bg-emerald-100/85'
+                    : 'border-emerald-100 bg-white/85 hover:bg-emerald-50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-lg">{item.emoji}</span>
+                  {createElement(item.icon, {
+                    className: selected ? 'h-4 w-4 text-emerald-700' : 'h-4 w-4 text-slate-500',
+                  })}
+                </div>
+                <p className="mt-2 text-sm font-semibold text-slate-800">{item.title}</p>
+                <p className="text-xs text-slate-500">{item.subtitle}</p>
+              </motion.button>
+            )
+          })}
+        </div>
       </section>
 
-      <AnimatePresence>
-        {mergedOpenModules.map((id, index) => {
-          const moduleItem = MODULES.find((item) => item.id === id)
-          if (!moduleItem) {
-            return null
-          }
-          return (
-            <ModuleWindow
-              key={id}
-              title={moduleItem.title}
-              subtitle={moduleItem.subtitle}
-              icon={moduleItem.icon}
-              index={index}
-              onFocus={() => focusModule(id)}
-              onClose={() => closeModule(id)}
-            >
-              {renderModule(id)}
-            </ModuleWindow>
-          )
-        })}
-      </AnimatePresence>
+      {mergedOpenModules.length ? (
+        <section className={`mt-4 p-3 sm:p-4 ${SOFT_PANEL}`}>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {mergedOpenModules.map((id) => {
+              const item = MODULES.find((moduleItem) => moduleItem.id === id)
+              if (!item) return null
+              const active = activeModuleId === id
+              return (
+                <motion.div key={id} layout className="flex items-center gap-1">
+                  <CozyButton
+                    className={active ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'bg-white'}
+                    onClick={() => navigate(`/module/${id}`)}
+                  >
+                    {item.emoji} {item.title}
+                  </CozyButton>
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => closeModule(id)}
+                    className="rounded-full border border-slate-200 bg-white p-1 text-slate-400 transition hover:bg-slate-50"
+                    aria-label={`关闭 ${item.title}`}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </motion.button>
+                </motion.div>
+              )
+            })}
+          </div>
+          <AnimatePresence mode="wait">
+            {activeModuleId ? (
+              <ModuleShell
+                key={activeModuleId}
+                title={MODULES.find((item) => item.id === activeModuleId)?.title || ''}
+                subtitle={MODULES.find((item) => item.id === activeModuleId)?.subtitle || ''}
+                icon={MODULES.find((item) => item.id === activeModuleId)?.icon || Sparkles}
+              >
+                {renderModule(activeModuleId)}
+              </ModuleShell>
+            ) : null}
+          </AnimatePresence>
+        </section>
+      ) : (
+        <section className={`mt-4 p-8 text-center ${SOFT_PANEL}`}>
+          <p className="text-sm text-slate-500">从上方任选一个模块开始，今天先轻松再输出。</p>
+        </section>
+      )}
 
-      <footer className="relative z-10 mt-5 flex items-center gap-2 text-xs text-emerald-300/75">
-        <Timer className="h-4 w-4" />
-        数据全部本地计算与存储，敏感输入仅写入 localStorage。
+      <footer className="mt-4 pb-2 text-center text-xs text-slate-500">
+        敏感输入只写 localStorage；黑话生成通过 Cloudflare Worker 代理 DeepSeek。
       </footer>
     </main>
   )

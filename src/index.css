@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  color: #d9ffe6;
-  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  background-color: #050505;
+  color: #213032;
+  font-family: "Inter", "PingFang SC", "Microsoft Yahei", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background-color: #eff6f1;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -16,10 +16,18 @@
 
 body {
   margin: 0;
-  background: #050505;
-  color: #d9ffe6;
+  min-height: 100vh;
+  color: #213032;
+  background:
+    radial-gradient(1200px circle at 0% 0%, rgba(184, 230, 218, 0.6), transparent 44%),
+    radial-gradient(1100px circle at 100% 10%, rgba(223, 240, 232, 0.85), transparent 48%),
+    linear-gradient(135deg, #eef5f0 0%, #f7fbf8 50%, #edf6f2 100%);
 }
 
 #root {
   min-height: 100vh;
+}
+
+::selection {
+  background: rgba(141, 204, 182, 0.45);
 }
