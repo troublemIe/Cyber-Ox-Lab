@@ -1,0 +1,6 @@
+name = "cyber-ox-refactor-proxy"
+main = "worker.js"
+compatibility_date = "2026-04-21"
+
+[vars]
+DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
