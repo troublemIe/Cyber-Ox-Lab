@@ -4,8 +4,6 @@ import {
   BatteryMedium,
   BellRing,
   Brain,
-  Bug,
-  Coffee,
   FileText,
   Ghost,
   LoaderCircle,
@@ -22,7 +20,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createElement, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 
 const MODULES = [
@@ -86,6 +84,18 @@ const JARGON_EXAMPLES = {
 const GLOBAL_GLASS =
   'bg-white/5 border border-emerald-300/20 backdrop-blur-xl drop-shadow-[0_0_15px_rgba(0,255,159,0.3)]'
 
+const MotionButton = motion.button
+const MotionDiv = motion.div
+const MotionP = motion.p
+const MotionSection = motion.section
+const MotionSpan = motion.span
+
+const CONSOLER_MESSAGES = [
+  '老板离他的法拉利又近了一步，加油，奋斗者！',
+  '检测到您的灵魂正在脱离肉体，请及时通过摸鱼找回自我。',
+  '本日精神阈值低于 22%，建议启动快乐摸鱼协议。',
+]
+
 function useLocalStorageState(key, initialValue) {
   const [value, setValue] = useState(() => {
     if (typeof window === 'undefined') {
@@ -130,7 +140,7 @@ function formatCurrency(value) {
 
 function CyberButton({ className = '', children, ...props }) {
   return (
-    <motion.button
+    <MotionButton
       type="button"
       whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.97 }}
@@ -138,13 +148,13 @@ function CyberButton({ className = '', children, ...props }) {
       {...props}
     >
       {children}
-    </motion.button>
+    </MotionButton>
   )
 }
 
 function ModuleWindow({ title, subtitle, icon: Icon, onClose, onFocus, children, index }) {
   return (
-    <motion.section
+    <MotionSection
       layout
       initial={{ opacity: 0, y: 24, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -160,7 +170,7 @@ function ModuleWindow({ title, subtitle, icon: Icon, onClose, onFocus, children,
     >
       <header className="flex items-center justify-between border-b border-emerald-300/20 px-4 py-3">
         <div className="flex items-center gap-3">
-          <Icon className="h-4 w-4 text-emerald-200" />
+          {createElement(Icon, { className: 'h-4 w-4 text-emerald-200' })}
           <div>
             <h2 className="text-sm font-semibold text-emerald-100">{title}</h2>
             <p className="text-xs text-emerald-300/80">{subtitle}</p>
@@ -175,7 +185,7 @@ function ModuleWindow({ title, subtitle, icon: Icon, onClose, onFocus, children,
         </CyberButton>
       </header>
       <div className="max-h-[70vh] overflow-y-auto p-4">{children}</div>
-    </motion.section>
+    </MotionSection>
   )
 }
 
@@ -302,14 +312,14 @@ function RecoveryModule({ onElapsedChange }) {
           </p>
           <p className="relative mt-2 text-xl text-emerald-200">{formatCurrency(earned)}</p>
         </div>
-        <motion.p
+        <MotionP
           key={Math.floor(elapsedMs / 2000)}
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           className="mt-3 text-xs text-emerald-300/85"
         >
           {tickerLines[Math.floor(elapsedMs / 2000) % tickerLines.length]}
-        </motion.p>
+        </MotionP>
       </div>
       <div className="flex flex-wrap gap-2">
         <CyberButton onClick={startRecovery}>
@@ -328,13 +338,13 @@ function RecoveryModule({ onElapsedChange }) {
 
       <AnimatePresence>
         {running ? (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-6 backdrop-blur-sm"
           >
-            <motion.div
+            <MotionDiv
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className={`relative w-full max-w-2xl overflow-hidden rounded-xl p-6 ${GLOBAL_GLASS}`}
@@ -366,8 +376,8 @@ function RecoveryModule({ onElapsedChange }) {
                   RESET TIMER
                 </CyberButton>
               </div>
-            </motion.div>
-          </motion.div>
+            </MotionDiv>
+          </MotionDiv>
         ) : null}
       </AnimatePresence>
     </div>
@@ -377,7 +387,7 @@ function RecoveryModule({ onElapsedChange }) {
 function VoidWalkerModule({ durations, setDurations }) {
   const [activeStatus, setActiveStatus] = useState(null)
   const [posterUrl, setPosterUrl] = useState('')
-  const lastTickRef = useRef(Date.now())
+  const lastTickRef = useRef(0)
 
   useEffect(() => {
     if (!activeStatus) {
@@ -448,7 +458,7 @@ function VoidWalkerModule({ durations, setDurations }) {
         {VOID_STATUS.map((status) => {
           const active = activeStatus === status.id
           return (
-            <motion.div
+            <MotionDiv
               key={status.id}
               layout
               className="rounded-lg border border-emerald-300/20 bg-black/45 p-3"
@@ -475,7 +485,7 @@ function VoidWalkerModule({ durations, setDurations }) {
                   )}
                 </CyberButton>
               </div>
-            </motion.div>
+            </MotionDiv>
           )
         })}
       </div>
@@ -610,14 +620,17 @@ function JargonRefactorModule() {
 }
 
 function CyberOxBoardModule() {
+  const totalCountdown = 1000 * 60 * 60 * 24 * 180
   const [bugCount, setBugCount] = useState(128)
   const [caffeine, setCaffeine] = useState(66)
-  const [now, setNow] = useState(Date.now())
+  const [countdownMs, setCountdownMs] = useState(totalCountdown)
   const [bossDistance, setBossDistance] = useState(67.4)
-  const resignationDeadline = useMemo(() => Date.now() + 1000 * 60 * 60 * 24 * 180, [])
 
   useEffect(() => {
-    const ticker = window.setInterval(() => setNow(Date.now()), 1000)
+    const ticker = window.setInterval(
+      () => setCountdownMs((value) => Math.max(0, value - 1000)),
+      1000,
+    )
     const bugTicker = window.setInterval(
       () => setBugCount((count) => count + Math.floor(Math.random() * 3)),
       2100,
@@ -639,11 +652,10 @@ function CyberOxBoardModule() {
     }
   }, [])
 
-  const countdown = Math.max(resignationDeadline - now, 0)
-  const days = Math.floor(countdown / (1000 * 60 * 60 * 24))
-  const hours = String(Math.floor((countdown % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0')
-  const minutes = String(Math.floor((countdown % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0')
-  const seconds = String(Math.floor((countdown % (1000 * 60)) / 1000)).padStart(2, '0')
+  const days = Math.floor(countdownMs / (1000 * 60 * 60 * 24))
+  const hours = String(Math.floor((countdownMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0')
+  const minutes = String(Math.floor((countdownMs % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0')
+  const seconds = String(Math.floor((countdownMs % (1000 * 60)) / 1000)).padStart(2, '0')
 
   return (
     <div className="space-y-4">
@@ -658,7 +670,7 @@ function CyberOxBoardModule() {
         <div className="rounded-lg border border-emerald-300/20 bg-black/45 p-3">
           <p className="text-xs text-emerald-300/75">咖啡因水平</p>
           <div className="mt-3 h-4 rounded-full border border-emerald-300/35 bg-black/60 p-0.5">
-            <motion.div
+            <MotionDiv
               animate={{ width: `${caffeine}%` }}
               className="h-full rounded-full bg-gradient-to-r from-emerald-300 via-cyan-300 to-emerald-500"
             />
@@ -677,7 +689,7 @@ function CyberOxBoardModule() {
           <div className="relative mx-auto h-24 w-24">
             <Radar className="absolute inset-0 m-auto h-8 w-8 text-emerald-200" />
             {[0, 1, 2].map((ring) => (
-              <motion.span
+              <MotionSpan
                 key={ring}
                 className="absolute inset-0 rounded-full border border-emerald-300/35"
                 animate={{ scale: [0.4, 1.1], opacity: [0.65, 0] }}
@@ -754,16 +766,11 @@ function CPUConsolerModule() {
   const [audioMode, setAudioMode] = useState('idle')
   const contextRef = useRef(null)
   const activeNodeRef = useRef(null)
-  const messages = [
-    '老板离他的法拉利又近了一步，加油，奋斗者！',
-    '检测到您的灵魂正在脱离肉体，请及时通过摸鱼找回自我。',
-    '本日精神阈值低于 22%，建议启动快乐摸鱼协议。',
-  ]
 
   const triggerConsoler = useCallback(() => {
-    const message = messages[Math.floor(Math.random() * messages.length)]
+    const message = CONSOLER_MESSAGES[Math.floor(Math.random() * CONSOLER_MESSAGES.length)]
     setToastMessage(`[功德 +1] ${message}`)
-  }, [messages])
+  }, [])
 
   useEffect(() => {
     const timer = window.setInterval(triggerConsoler, 15 * 60 * 1000)
@@ -872,14 +879,14 @@ function CPUConsolerModule() {
       </p>
       <AnimatePresence>
         {toastMessage ? (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 30 }}
             className={`rounded-lg px-4 py-3 text-sm text-emerald-100 ${GLOBAL_GLASS}`}
           >
             {toastMessage}
-          </motion.div>
+          </MotionDiv>
         ) : null}
       </AnimatePresence>
     </div>
@@ -994,23 +1001,14 @@ function DesktopWorkspace() {
     statusB: 0,
     statusC: 0,
   })
+  const validModule = moduleId ? MODULES.some((moduleItem) => moduleItem.id === moduleId) : true
 
-  useEffect(() => {
-    if (!moduleId) {
-      return
+  const mergedOpenModules = useMemo(() => {
+    if (moduleId && validModule && !openModules.includes(moduleId)) {
+      return [...openModules, moduleId]
     }
-    const matched = MODULES.some((moduleItem) => moduleItem.id === moduleId)
-    if (!matched) {
-      navigate('/', { replace: true })
-      return
-    }
-    setOpenModules((prev) => {
-      if (prev.includes(moduleId)) {
-        return [...prev.filter((item) => item !== moduleId), moduleId]
-      }
-      return [...prev, moduleId]
-    })
-  }, [moduleId, navigate])
+    return openModules
+  }, [moduleId, openModules, validModule])
 
   const openModule = (id) => {
     setOpenModules((prev) => {
@@ -1023,7 +1021,7 @@ function DesktopWorkspace() {
   }
 
   const closeModule = (id) => {
-    const next = openModules.filter((item) => item !== id)
+    const next = mergedOpenModules.filter((item) => item !== id)
     setOpenModules(next)
     if (moduleId === id) {
       navigate(next.length ? `/module/${next[next.length - 1]}` : '/')
@@ -1038,6 +1036,10 @@ function DesktopWorkspace() {
     () => recoveryElapsedMs + voidDurations.statusA + voidDurations.statusB + voidDurations.statusC,
     [recoveryElapsedMs, voidDurations],
   )
+
+  if (!validModule) {
+    return <Navigate to="/" replace />
+  }
 
   const renderModule = (id) => {
     if (id === 'recovery') {
@@ -1087,8 +1089,8 @@ function DesktopWorkspace() {
 
       <section className="relative z-10 mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         {MODULES.map((moduleItem) => (
-          <motion.div key={moduleItem.id} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
-            <motion.button
+          <MotionDiv key={moduleItem.id} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+            <MotionButton
               type="button"
               className={`w-full rounded-lg p-3 text-left transition ${GLOBAL_GLASS}`}
               onClick={() => openModule(moduleItem.id)}
@@ -1096,13 +1098,13 @@ function DesktopWorkspace() {
               <moduleItem.icon className="h-5 w-5 text-emerald-200" />
               <p className="mt-2 text-sm text-emerald-100">{moduleItem.title}</p>
               <p className="mt-1 text-[11px] text-emerald-300/75">{moduleItem.subtitle}</p>
-            </motion.button>
-          </motion.div>
+            </MotionButton>
+          </MotionDiv>
         ))}
       </section>
 
       <AnimatePresence>
-        {openModules.map((id, index) => {
+        {mergedOpenModules.map((id, index) => {
           const moduleItem = MODULES.find((item) => item.id === id)
           if (!moduleItem) {
             return null
