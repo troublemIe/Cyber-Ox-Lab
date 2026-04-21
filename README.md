@@ -42,10 +42,11 @@ npm run dev
 
 在 Pages 项目设置里添加：
 
-- `DEEPSEEK_KEY`（必填）
+- `DEEPSEEK_KEY`（推荐）
+- `DEEPSEEK_API_KEY`（兼容旧命名，也可用）
 - `DEEPSEEK_BASE_URL`（可选，默认 `https://api.deepseek.com/v1`）
 
-接口会从 `context.env.DEEPSEEK_KEY` 读取密钥。
+接口会优先读取 `context.env.DEEPSEEK_KEY`，若不存在则回退读取 `context.env.DEEPSEEK_API_KEY`。
 
 ### 2) 本地开发（可选）
 

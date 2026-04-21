@@ -27,9 +27,13 @@ export async function onRequestOptions() {
 
 export async function onRequestPost(context) {
   const { request, env } = context
+  const deepseekKey = env.DEEPSEEK_KEY || env.DEEPSEEK_API_KEY
 
-  if (!env.DEEPSEEK_KEY) {
-    return jsonResponse({ error: 'Missing DEEPSEEK_KEY in Cloudflare Pages env.' }, 500)
+  if (!deepseekKey) {
+    return jsonResponse(
+      { error: 'Missing DeepSeek key: set DEEPSEEK_KEY or DEEPSEEK_API_KEY in Cloudflare Pages env.' },
+      500,
+    )
   }
 
   const payload = await request.json().catch(() => null)
@@ -53,7 +57,7 @@ export async function onRequestPost(context) {
   const deepseekResponse = await fetch(targetUrl, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${env.DEEPSEEK_KEY}`,
+      Authorization: `Bearer ${deepseekKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
